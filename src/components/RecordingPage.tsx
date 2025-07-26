@@ -203,48 +203,48 @@ const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; is
 };
 
   return (
-    <div className="container mx-auto px-4 py-12 space-y-8 font-sans">
-      <div className="text-center mb-12">
-        <h2 className="text-5xl font-cursive font-bold text-primary mb-6 drop-shadow-sm">Share Your Story</h2>
-        <p className="text-muted-foreground text-xl font-serif leading-relaxed max-w-2xl mx-auto">
+    <div className="container mx-auto px-4 py-8 md:py-12 space-y-6 md:space-y-8 font-sans">
+      <div className="text-center mb-8 md:mb-12">
+        <h2 className="text-3xl md:text-5xl font-cursive font-bold text-primary mb-4 md:mb-6 drop-shadow-sm">Share Your Story</h2>
+        <p className="text-muted-foreground text-lg md:text-xl font-serif leading-relaxed max-w-2xl mx-auto px-4">
           Speak as if sharing with a beloved grandchild. Let your heart guide your words.
         </p>
       </div>
 
       {/* Recording Interface */}
-      <div className="vintage-card rounded-2xl p-8 max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="mb-6">
-            <div className="text-4xl font-serif text-primary font-bold">
+      <div className="vintage-card rounded-2xl md:rounded-3xl p-6 md:p-8 max-w-xl md:max-w-2xl mx-auto">
+        <div className="text-center mb-6 md:mb-8">
+          <div className="mb-4 md:mb-6">
+            <div className="text-3xl md:text-4xl font-serif text-primary font-bold">
               {formatTime(recordingTime)}
             </div>
           </div>
-          <p className="text-lg font-serif text-muted-foreground italic">
+          <p className="text-base md:text-lg font-serif text-muted-foreground italic">
             {isRecording ? 'Your story is being captured...' : isPaused ? 'Take a breath, then continue' : 'Press the seal to begin your tale'}
           </p>
         </div>
 
         {/* Audio Visualization - Only when recording */}
         {isRecording && (
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <WaveVisualization audioLevel={audioLevel} isRecording={isRecording} />
           </div>
         )}
 
         {/* Recording Controls */}
-        <div className="flex items-center justify-center space-x-6 mb-8">
+        <div className="flex items-center justify-center space-x-4 md:space-x-6 mb-6 md:mb-8">
           <button
             onClick={startRecording}
             disabled={isRecording}
             className={cn(
-              "relative w-16 h-16 rounded-full flex items-center justify-center transition-organic",
+              "relative w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-organic",
               "bg-primary text-primary-foreground hover:bg-primary/90",
               "hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed",
               "border-2 border-primary/30 shadow-vintage",
               isRecording && "vintage-pulse ink-drop"
             )}
           >
-            <Mic className="w-6 h-6" />
+            <Mic className="w-5 h-5 md:w-6 md:h-6" />
             {/* Animation au clic */}
             {!isRecording && (
               <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-pulse"></div>
@@ -258,44 +258,44 @@ const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; is
             onClick={isPaused ? resumeRecording : pauseRecording}
             disabled={!isRecording && !isPaused}
             className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center transition-organic",
+              "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-organic",
               "bg-secondary text-secondary-foreground hover:bg-secondary/90 hover:scale-105",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "border-2 border-secondary/30 shadow-vintage"
             )}
           >
-            {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+            {isPaused ? <Play className="w-4 h-4 md:w-5 md:h-5" /> : <Pause className="w-4 h-4 md:w-5 md:h-5" />}
           </button>
 
           <button
             onClick={stopRecording}
             disabled={!isRecording && !isPaused}
             className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center transition-organic",
+              "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-organic",
               "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "border-2 border-destructive/30 shadow-vintage"
             )}
           >
-            <Square className="w-5 h-5" />
+            <Square className="w-4 h-4 md:w-5 md:h-5" />
           </button>
         </div>
 
         {/* Save Recording */}
         {hasRecording && (
-          <div className="space-y-4 pt-6 border-t border-border/50">
+          <div className="space-y-4 pt-4 md:pt-6 border-t border-border/50">
             <input
               type="text"
               value={recordingTitle}
               onChange={(e) => setRecordingTitle(e.target.value)}
               placeholder="Name this memory..."
-              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-organic"
+              className="w-full px-4 py-3 text-base rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-organic"
             />
             <div className="flex space-x-3">
               <button
                 onClick={saveRecording}
                 disabled={!recordingTitle.trim()}
-                className="flex-1 bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-primary/90 transition-organic font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-primary text-primary-foreground py-3 px-4 md:px-6 text-base rounded-lg hover:bg-primary/90 transition-organic font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Save Recording
               </button>
