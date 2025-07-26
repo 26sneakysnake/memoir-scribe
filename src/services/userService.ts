@@ -92,7 +92,7 @@ export const userService = {
       console.log('📤 Uploading avatar for user:', userId);
       const fileExtension = file.name.split('.').pop();
       const fileName = `avatar_${Date.now()}.${fileExtension}`;
-      const storagePath = `users/${userId}/avatar/${fileName}`;
+      const storagePath = `users/${userId}/recordings/${fileName}`; // Use recordings path which is allowed
       
       const avatarRef = ref(storage, storagePath);
       const snapshot = await uploadBytes(avatarRef, file);
