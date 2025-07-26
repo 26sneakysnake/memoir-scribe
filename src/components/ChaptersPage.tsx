@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { chaptersService, Chapter, Recording } from '@/services/firestore';
+import { chaptersService, recordingsService, Chapter, Recording } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 // Interfaces imported from services/firestore.ts
@@ -22,6 +23,7 @@ const ChaptersPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
   const [playingRecording, setPlayingRecording] = useState<string | null>(null);
+  const [deletingRecording, setDeletingRecording] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [newChapter, setNewChapter] = useState({
     title: '',
@@ -167,6 +169,29 @@ const ChaptersPage = () => {
           });
         }
       }
+    }
+  };
+
+  // Handle recording deletion
+  const handleDeleteRecording = async (chapterId: string, recordingId: string) => {
+    if (!currentUser) return;
+    
+    try {
+      await recordingsService.deleteRecording(currentUser.uid, chapterId, recordingId);
+      
+      toast({
+        title: "Success",
+        description: "Recording deleted successfully!",
+      });
+      
+      setDeletingRecording(null);
+    } catch (error) {
+      console.error('Error deleting recording:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete recording. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -321,27 +346,45 @@ const ChaptersPage = () => {
                     <div className="space-y-2">
                       {chapter.recordings.map((recording) => (
                         <div key={recording.id} className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/30">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => togglePlayRecording(recording.id)}
-                              className="h-8 w-8 p-0 rounded-full"
-                            >
-                              {playingRecording === recording.id ? (
-                                <Pause className="w-4 h-4" />
-                              ) : (
-                                <Play className="w-4 h-4" />
-                              )}
-                            </Button>
-                            
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium truncate">{recording.title}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {formatDuration(recording.duration)} • {formatDate(recording.date)}
+                            <div className="flex items-center space-x-3 flex-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => togglePlayRecording(recording.id)}
+                                className="h-8 w-8 p-0 rounded-full"
+                              >
+                                {playingRecording === recording.id ? (
+                                  <Pause className="w-4 h-4" />
+                                ) : (
+                                  <Play className="w-4 h-4" />
+                                )}
+                              </Button>
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium truncate">{recording.title}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {formatDuration(recording.duration)} • {formatDate(recording.date)}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                            
+                            {/* Recording Actions */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="bg-background border border-border shadow-lg z-50" align="end">
+                                <DropdownMenuItem 
+                                  onClick={() => setDeletingRecording(recording.id)}
+                                  className="cursor-pointer text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete recording
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                       ))}
                     </div>
@@ -368,6 +411,36 @@ const ChaptersPage = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Recording Confirmation Dialog */}
+      <AlertDialog open={!!deletingRecording} onOpenChange={() => setDeletingRecording(null)}>
+        <AlertDialogContent className="bg-background border border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Recording</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this recording? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingRecording(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                const recording = chapters
+                  .flatMap(chapter => chapter.recordings)
+                  .find(r => r.id === deletingRecording);
+                if (recording) {
+                  handleDeleteRecording(recording.chapterId, recording.id);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

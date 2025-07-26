@@ -1,6 +1,11 @@
-import { useState } from 'react';
-import { Mic, BookOpen, Settings, User, Feather } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mic, BookOpen, Settings, User, Feather, LogOut } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { userService } from '@/services/userService';
 
 interface NavigationProps {
   activeTab: string;
@@ -9,6 +14,37 @@ interface NavigationProps {
 }
 
 const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) => {
+  const { currentUser, logout } = useAuth();
+  const [userAvatar, setUserAvatar] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
+
+  // Load user profile data
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const settings = await userService.getUserSettings(currentUser.uid);
+        if (settings) {
+          setUserAvatar(settings.avatar || '');
+          setUserName(settings.name || currentUser.email?.split('@')[0] || '');
+        }
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    };
+
+    loadUserProfile();
+  }, [currentUser]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   const tabs = [
     { id: 'record', label: 'Recording', icon: Mic },
     { id: 'stories', label: 'Stories', icon: BookOpen },
@@ -75,11 +111,34 @@ const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) =>
             })}
           </nav>
 
-          <div className="hidden md:flex items-center space-x-3">
-            <div className="glass rounded-full p-3 cursor-pointer hover:bg-primary/10 transition-organic border border-primary/20">
-              <User className="w-5 h-5 text-primary" />
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9 border-2 border-primary/20">
+                  <AvatarImage src={userAvatar} alt={userName} />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-background border border-border shadow-lg z-50" align="end">
+              <DropdownMenuItem 
+                onClick={() => onTabChange('settings')}
+                className="cursor-pointer"
+              >
+                <User className="mr-2 h-4 w-4" />
+                Profile & Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleLogout}
+                className="cursor-pointer text-destructive"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
