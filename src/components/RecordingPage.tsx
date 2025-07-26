@@ -156,7 +156,7 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       {/* Main Recording Control */}
       <Card className="glass-card p-8 text-center space-y-6">
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Enregistrement Audio</h2>
+          <h2 className="text-2xl font-bold">Audio Recording</h2>
           
           {/* Timer */}
           <div className="text-4xl font-mono font-bold text-primary">
@@ -201,10 +201,10 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
           
           {/* Status */}
           <div className="text-sm text-muted-foreground">
-            {isRecording && !isPaused && "Enregistrement en cours..."}
-            {isRecording && isPaused && "Enregistrement en pause"}
-            {!isRecording && !hasRecording && "Appuyez pour commencer l'enregistrement"}
-            {hasRecording && "Enregistrement terminé"}
+            {isRecording && !isPaused && "Recording in progress..."}
+            {isRecording && isPaused && "Recording paused"}
+            {!isRecording && !hasRecording && "Press to start recording"}
+            {hasRecording && "Recording completed"}
           </div>
         </div>
       </Card>
@@ -212,10 +212,10 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       {/* Save Recording */}
       {hasRecording && (
         <Card className="glass-card p-6 space-y-4">
-          <h3 className="text-lg font-semibold">Sauvegarder l'enregistrement</h3>
+          <h3 className="text-lg font-semibold">Save Recording</h3>
           <div className="flex space-x-3">
             <Input
-              placeholder="Titre de l'enregistrement..."
+              placeholder="Recording title..."
               value={recordingTitle}
               onChange={(e) => setRecordingTitle(e.target.value)}
               className="flex-1"
@@ -226,7 +226,7 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
               className="bg-primary hover:bg-primary/90"
             >
               <Save className="w-4 h-4 mr-2" />
-              Sauvegarder
+              Save
             </Button>
           </div>
         </Card>
@@ -234,12 +234,12 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
 
       {/* Recording Tips */}
       <Card className="glass-card p-6">
-        <h3 className="text-lg font-semibold mb-4">Conseils d'enregistrement</h3>
+        <h3 className="text-lg font-semibold mb-4">Recording Tips</h3>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li>• Trouvez un endroit calme pour minimiser le bruit de fond</li>
-          <li>• Parlez clairement et à un rythme naturel</li>
-          <li>• Gardez le microphone à une distance constante</li>
-          <li>• Organisez vos pensées par chapitres thématiques</li>
+          <li>• Find a quiet place to minimize background noise</li>
+          <li>• Speak clearly and at a natural pace</li>
+          <li>• Keep the microphone at a consistent distance</li>
+          <li>• Organize your thoughts by thematic chapters</li>
         </ul>
       </Card>
     </div>

@@ -28,22 +28,22 @@ const ChaptersPage = () => {
   const [chapters, setChapters] = useState<Chapter[]>([
     {
       id: '1',
-      title: 'Enfance et famille',
-      description: 'Mes premiers souvenirs, la famille, la maison familiale...',
-      topics: ['Premiers souvenirs', 'Parents', 'Frères et sœurs', 'Maison familiale'],
+      title: 'Childhood and Family',
+      description: 'My first memories, family, the family home...',
+      topics: ['First memories', 'Parents', 'Siblings', 'Family home'],
       clips: [
-        { id: '1', title: 'Mes premiers pas', duration: 180, date: '2024-01-15', chapterId: '1' },
-        { id: '2', title: 'La maison de mon enfance', duration: 240, date: '2024-01-16', chapterId: '1' },
+        { id: '1', title: 'My first steps', duration: 180, date: '2024-01-15', chapterId: '1' },
+        { id: '2', title: 'My childhood home', duration: 240, date: '2024-01-16', chapterId: '1' },
       ],
       createdAt: '2024-01-15'
     },
     {
       id: '2',
-      title: 'Études et jeunesse',
-      description: 'L\'école, les amis, les premiers amours...',
-      topics: ['École primaire', 'Lycée', 'Amis d\'enfance', 'Premiers amours'],
+      title: 'Education and Youth',
+      description: 'School, friends, first love...',
+      topics: ['Elementary school', 'High school', 'Childhood friends', 'First love'],
       clips: [
-        { id: '3', title: 'Mon institutrice préférée', duration: 150, date: '2024-01-17', chapterId: '2' },
+        { id: '3', title: 'My favorite teacher', duration: 150, date: '2024-01-17', chapterId: '2' },
       ],
       createdAt: '2024-01-17'
     }
@@ -65,7 +65,7 @@ const ChaptersPage = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
@@ -122,37 +122,37 @@ const ChaptersPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Mes Chapitres</h1>
-          <p className="text-muted-foreground">Organisez vos mémoires par thèmes</p>
+          <h1 className="text-3xl font-bold">My Chapters</h1>
+          <p className="text-muted-foreground">Organize your memories by themes</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-gradient-to-r from-primary to-primary-glow glow-primary">
               <Plus className="w-4 h-4 mr-2" />
-              Nouveau Chapitre
+              New Chapter
             </Button>
           </DialogTrigger>
           <DialogContent className="glass-card border-border/50">
             <DialogHeader>
               <DialogTitle>
-                {editingChapter ? 'Modifier le chapitre' : 'Nouveau chapitre'}
+                {editingChapter ? 'Edit chapter' : 'New chapter'}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="Titre du chapitre"
+                placeholder="Chapter title"
                 value={newChapter.title}
                 onChange={(e) => setNewChapter(prev => ({ ...prev, title: e.target.value }))}
               />
               <Textarea
-                placeholder="Description du chapitre"
+                placeholder="Chapter description"
                 value={newChapter.description}
                 onChange={(e) => setNewChapter(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
               />
               <Input
-                placeholder="Topics/thèmes (séparés par des virgules)"
+                placeholder="Topics/themes (separated by commas)"
                 value={newChapter.topics}
                 onChange={(e) => setNewChapter(prev => ({ ...prev, topics: e.target.value }))}
               />
@@ -161,7 +161,7 @@ const ChaptersPage = () => {
                 disabled={!newChapter.title.trim()}
                 className="w-full bg-primary hover:bg-primary/90"
               >
-                {editingChapter ? 'Modifier' : 'Créer'}
+                {editingChapter ? 'Update' : 'Create'}
               </Button>
             </div>
           </DialogContent>
@@ -214,7 +214,7 @@ const ChaptersPage = () => {
 
             {/* Audio Clips */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium">Enregistrements ({chapter.clips.length})</h4>
+              <h4 className="text-sm font-medium">Recordings ({chapter.clips.length})</h4>
               {chapter.clips.length > 0 ? (
                 <div className="space-y-2">
                   {chapter.clips.map((clip) => (
@@ -248,14 +248,14 @@ const ChaptersPage = () => {
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground italic">
-                  Aucun enregistrement pour ce chapitre
+                  No recordings for this chapter
                 </p>
               )}
             </div>
 
             {/* Chapter Stats */}
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
-              <span>Créé le {formatDate(chapter.createdAt)}</span>
+              <span>Created on {formatDate(chapter.createdAt)}</span>
               <span>
                 {chapter.clips.reduce((total, clip) => total + clip.duration, 0) > 0 && 
                   `${formatDuration(chapter.clips.reduce((total, clip) => total + clip.duration, 0))} total`
@@ -272,16 +272,16 @@ const ChaptersPage = () => {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
               <BookOpen className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold">Aucun chapitre</h3>
+            <h3 className="text-lg font-semibold">No chapters</h3>
             <p className="text-muted-foreground">
-              Commencez par créer votre premier chapitre pour organiser vos mémoires
+              Start by creating your first chapter to organize your memories
             </p>
             <Button
               onClick={() => setIsDialogOpen(true)}
               className="bg-gradient-to-r from-primary to-primary-glow"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Créer un chapitre
+              Create a chapter
             </Button>
           </div>
         </Card>

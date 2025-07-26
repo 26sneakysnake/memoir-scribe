@@ -10,9 +10,9 @@ interface NavigationProps {
 
 const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) => {
   const tabs = [
-    { id: 'record', label: 'Enregistrement', icon: Mic },
-    { id: 'chapters', label: 'Chapitres', icon: BookOpen },
-    { id: 'settings', label: 'Paramètres', icon: Settings },
+    { id: 'record', label: 'Recording', icon: Mic },
+    { id: 'chapters', label: 'Chapters', icon: BookOpen },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (
@@ -24,7 +24,7 @@ const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) =>
               <Mic className="w-4 h-4 text-primary-foreground" />
             </div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-              Mémoires Audio
+              mémoire
             </h1>
           </div>
 

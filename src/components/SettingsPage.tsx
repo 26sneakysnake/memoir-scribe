@@ -31,19 +31,19 @@ const SettingsPage = () => {
     nextBilling: '2024-02-15',
     price: '9.99€',
     features: [
-      'Enregistrements illimités',
-      'Stockage cloud 100GB',
-      'Transcription automatique',
-      'Export avancé',
-      'Support prioritaire'
+      'Unlimited recordings',
+      '100GB cloud storage',
+      'Automatic transcription',
+      'Advanced export',
+      'Priority support'
     ]
   };
 
   const historyData = [
-    { id: '1', action: 'Enregistrement sauvegardé', item: 'Mes premiers pas', date: '2024-01-20', time: '14:30' },
-    { id: '2', action: 'Chapitre créé', item: 'Enfance et famille', date: '2024-01-19', time: '16:45' },
-    { id: '3', action: 'Export réalisé', item: 'Chapitre complet', date: '2024-01-18', time: '10:15' },
-    { id: '4', action: 'Profil modifié', item: 'Informations personnelles', date: '2024-01-17', time: '09:20' },
+    { id: '1', action: 'Recording saved', item: 'My first steps', date: '2024-01-20', time: '2:30 PM' },
+    { id: '2', action: 'Chapter created', item: 'Childhood and Family', date: '2024-01-19', time: '4:45 PM' },
+    { id: '3', action: 'Export completed', item: 'Complete chapter', date: '2024-01-18', time: '10:15 AM' },
+    { id: '4', action: 'Profile updated', item: 'Personal information', date: '2024-01-17', time: '9:20 AM' },
   ];
 
   const handleProfileUpdate = () => {
@@ -56,7 +56,7 @@ const SettingsPage = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
@@ -67,15 +67,15 @@ const SettingsPage = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Paramètres</h1>
-          <p className="text-muted-foreground">Gérez votre profil et vos préférences</p>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground">Manage your profile and preferences</p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 glass-card">
             <TabsTrigger value="profile" className="flex items-center space-x-2">
               <User className="w-4 h-4" />
-              <span className="hidden sm:inline">Profil</span>
+              <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
             <TabsTrigger value="audio" className="flex items-center space-x-2">
               <Volume2 className="w-4 h-4" />
@@ -83,18 +83,18 @@ const SettingsPage = () => {
             </TabsTrigger>
             <TabsTrigger value="billing" className="flex items-center space-x-2">
               <CreditCard className="w-4 h-4" />
-              <span className="hidden sm:inline">Abonnement</span>
+              <span className="hidden sm:inline">Subscription</span>
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center space-x-2">
               <History className="w-4 h-4" />
-              <span className="hidden sm:inline">Historique</span>
+              <span className="hidden sm:inline">History</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
             <Card className="glass-card p-6">
-              <h3 className="text-lg font-semibold mb-4">Informations personnelles</h3>
+              <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
               <div className="space-y-6">
                 {/* Avatar Section */}
                 <div className="flex items-center space-x-4">
@@ -106,10 +106,10 @@ const SettingsPage = () => {
                   </Avatar>
                   <div className="space-y-2">
                     <Button variant="outline" size="sm">
-                      Changer la photo
+                      Change photo
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      JPG, PNG jusqu'à 2MB
+                      JPG, PNG up to 2MB
                     </p>
                   </div>
                 </div>
@@ -119,7 +119,7 @@ const SettingsPage = () => {
                 {/* Profile Form */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nom complet</Label>
+                    <Label htmlFor="name">Full name</Label>
                     <Input
                       id="name"
                       value={userProfile.name}
@@ -136,7 +136,7 @@ const SettingsPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Téléphone</Label>
+                    <Label htmlFor="phone">Phone</Label>
                     <Input
                       id="phone"
                       value={userProfile.phoneNumber}
@@ -146,9 +146,9 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Button variant="outline">Annuler</Button>
+                  <Button variant="outline">Cancel</Button>
                   <Button onClick={handleProfileUpdate} className="bg-primary hover:bg-primary/90">
-                    Sauvegarder
+                    Save
                   </Button>
                 </div>
               </div>
@@ -158,14 +158,14 @@ const SettingsPage = () => {
             <Card className="glass-card p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <Shield className="w-5 h-5 mr-2 text-primary" />
-                Sécurité
+                Security
               </h3>
               <div className="space-y-4">
                 <Button variant="outline" className="w-full justify-start">
-                  Changer le mot de passe
+                  Change password
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
-                  Authentification à deux facteurs
+                  Two-factor authentication
                 </Button>
               </div>
             </Card>
@@ -174,13 +174,13 @@ const SettingsPage = () => {
           {/* Audio Settings Tab */}
           <TabsContent value="audio" className="space-y-6">
             <Card className="glass-card p-6">
-              <h3 className="text-lg font-semibold mb-4">Préférences d'enregistrement</h3>
+              <h3 className="text-lg font-semibold mb-4">Recording Preferences</h3>
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label>Sauvegarde automatique</Label>
+                    <Label>Auto-save</Label>
                     <p className="text-sm text-muted-foreground">
-                      Sauvegarde automatiquement vos enregistrements
+                      Automatically save your recordings
                     </p>
                   </div>
                   <Switch
@@ -193,9 +193,9 @@ const SettingsPage = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label>Qualité haute définition</Label>
+                    <Label>High definition quality</Label>
                     <p className="text-sm text-muted-foreground">
-                      Enregistre en qualité 48kHz pour une meilleure qualité audio
+                      Record in 48kHz quality for better audio quality
                     </p>
                   </div>
                   <Switch
@@ -208,9 +208,9 @@ const SettingsPage = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label>Réduction de bruit</Label>
+                    <Label>Noise reduction</Label>
                     <p className="text-sm text-muted-foreground">
-                      Supprime automatiquement le bruit de fond
+                      Automatically remove background noise
                     </p>
                   </div>
                   <Switch
@@ -223,9 +223,9 @@ const SettingsPage = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label>Transcription automatique</Label>
+                    <Label>Automatic transcription</Label>
                     <p className="text-sm text-muted-foreground">
-                      Convertit automatiquement vos enregistrements en texte
+                      Automatically convert your recordings to text
                     </p>
                     <Badge variant="secondary" className="text-xs">Premium</Badge>
                   </div>
@@ -238,14 +238,14 @@ const SettingsPage = () => {
             </Card>
 
             <Card className="glass-card p-6">
-              <h3 className="text-lg font-semibold mb-4">Export et partage</h3>
+              <h3 className="text-lg font-semibold mb-4">Export and sharing</h3>
               <div className="space-y-3">
                 <Button variant="outline" className="w-full justify-start">
                   <Download className="w-4 h-4 mr-2" />
-                  Exporter tous les enregistrements
+                  Export all recordings
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  Téléchargez une archive complète de vos mémoires audio
+                  Download a complete archive of your audio memories
                 </p>
               </div>
             </Card>
@@ -254,30 +254,30 @@ const SettingsPage = () => {
           {/* Billing Tab */}
           <TabsContent value="billing" className="space-y-6">
             <Card className="glass-card p-6">
-              <h3 className="text-lg font-semibold mb-4">Abonnement actuel</h3>
+              <h3 className="text-lg font-semibold mb-4">Current subscription</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold flex items-center">
                       Plan {subscriptionData.plan}
                       <Badge className="ml-2 bg-primary text-primary-foreground">
-                        {subscriptionData.status === 'active' ? 'Actif' : 'Inactif'}
+                        {subscriptionData.status === 'active' ? 'Active' : 'Inactive'}
                       </Badge>
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Prochaine facturation : {formatDate(subscriptionData.nextBilling)}
+                      Next billing: {formatDate(subscriptionData.nextBilling)}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-primary">{subscriptionData.price}</p>
-                    <p className="text-sm text-muted-foreground">/mois</p>
+                    <p className="text-sm text-muted-foreground">/month</p>
                   </div>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <h5 className="font-medium">Fonctionnalités incluses :</h5>
+                  <h5 className="font-medium">Included features:</h5>
                   <ul className="space-y-1">
                     {subscriptionData.features.map((feature, index) => (
                       <li key={index} className="text-sm text-muted-foreground flex items-center">
@@ -290,29 +290,29 @@ const SettingsPage = () => {
 
                 <div className="flex space-x-3 pt-4">
                   <Button variant="outline" className="flex-1">
-                    Changer de plan
+                    Change plan
                   </Button>
                   <Button variant="outline" className="flex-1">
-                    Annuler l'abonnement
+                    Cancel subscription
                   </Button>
                 </div>
               </div>
             </Card>
 
             <Card className="glass-card p-6">
-              <h3 className="text-lg font-semibold mb-4">Historique de facturation</h3>
+              <h3 className="text-lg font-semibold mb-4">Billing history</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2 border-b border-border/50">
-                  <span className="text-sm">15 Jan 2024</span>
-                  <span className="text-sm font-medium">9.99€</span>
+                  <span className="text-sm">Jan 15, 2024</span>
+                  <span className="text-sm font-medium">$9.99</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-border/50">
-                  <span className="text-sm">15 Déc 2023</span>
-                  <span className="text-sm font-medium">9.99€</span>
+                  <span className="text-sm">Dec 15, 2023</span>
+                  <span className="text-sm font-medium">$9.99</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-sm">15 Nov 2023</span>
-                  <span className="text-sm font-medium">9.99€</span>
+                  <span className="text-sm">Nov 15, 2023</span>
+                  <span className="text-sm font-medium">$9.99</span>
                 </div>
               </div>
             </Card>
@@ -321,7 +321,7 @@ const SettingsPage = () => {
           {/* History Tab */}
           <TabsContent value="history" className="space-y-6">
             <Card className="glass-card p-6">
-              <h3 className="text-lg font-semibold mb-4">Activité récente</h3>
+              <h3 className="text-lg font-semibold mb-4">Recent activity</h3>
               <div className="space-y-3">
                 {historyData.map((item) => (
                   <div key={item.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/20 transition-smooth">
