@@ -1,0 +1,180 @@
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  getDocs, 
+  getDoc,
+  query, 
+  orderBy, 
+  onSnapshot,
+  Timestamp 
+} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
+
+// Updated interfaces to match your naming convention
+export interface Recording {
+  id: string;
+  title: string;
+  duration: number; // in seconds
+  date: string;
+  chapterId: string;
+  audioUrl?: string;
+}
+
+export interface Chapter {
+  id: string;
+  title: string;
+  description: string;
+  topics: string[];
+  recordings: Recording[];
+  createdAt: string;
+}
+
+// Chapter CRUD operations - users/{userId}/chapters
+export const chaptersService = {
+  // Get all chapters for a user
+  getChapters: async (userId: string): Promise<Chapter[]> => {
+    const chaptersRef = collection(db, 'users', userId, 'chapters');
+    const q = query(chaptersRef, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    
+    const chapters: Chapter[] = [];
+    
+    for (const chapterDoc of snapshot.docs) {
+      const chapterData = chapterDoc.data();
+      
+      // Get recordings for this chapter (subcollection)
+      const recordingsRef = collection(db, 'users', userId, 'chapters', chapterDoc.id, 'recordings');
+      const recordingsSnapshot = await getDocs(recordingsRef);
+      
+      const recordings: Recording[] = recordingsSnapshot.docs.map(recordingDoc => ({
+        id: recordingDoc.id,
+        ...recordingDoc.data(),
+        chapterId: chapterDoc.id
+      })) as Recording[];
+      
+      chapters.push({
+        id: chapterDoc.id,
+        ...chapterData,
+        recordings
+      } as Chapter);
+    }
+    
+    return chapters;
+  },
+
+  // Add a new chapter
+  addChapter: async (userId: string, chapter: Omit<Chapter, 'id' | 'recordings'>): Promise<string> => {
+    const chaptersRef = collection(db, 'users', userId, 'chapters');
+    const docRef = await addDoc(chaptersRef, {
+      ...chapter,
+      createdAt: Timestamp.now().toDate().toISOString()
+    });
+    return docRef.id;
+  },
+
+  // Update a chapter
+  updateChapter: async (userId: string, chapterId: string, updates: Partial<Chapter>): Promise<void> => {
+    const chapterRef = doc(db, 'users', userId, 'chapters', chapterId);
+    await updateDoc(chapterRef, updates);
+  },
+
+  // Delete a chapter (and all its recordings)
+  deleteChapter: async (userId: string, chapterId: string): Promise<void> => {
+    const chapterRef = doc(db, 'users', userId, 'chapters', chapterId);
+    await deleteDoc(chapterRef);
+  },
+
+  // Listen to real-time changes
+  listenToChapters: (userId: string, callback: (chapters: Chapter[]) => void) => {
+    const chaptersRef = collection(db, 'users', userId, 'chapters');
+    const q = query(chaptersRef, orderBy('createdAt', 'desc'));
+    
+    return onSnapshot(q, async (snapshot) => {
+      const chapters: Chapter[] = [];
+      
+      for (const chapterDoc of snapshot.docs) {
+        const chapterData = chapterDoc.data();
+        
+        // Get recordings for this chapter
+        const recordingsRef = collection(db, 'users', userId, 'chapters', chapterDoc.id, 'recordings');
+        const recordingsSnapshot = await getDocs(recordingsRef);
+        
+        const recordings: Recording[] = recordingsSnapshot.docs.map(recordingDoc => ({
+          id: recordingDoc.id,
+          ...recordingDoc.data(),
+          chapterId: chapterDoc.id
+        })) as Recording[];
+        
+        chapters.push({
+          id: chapterDoc.id,
+          ...chapterData,
+          recordings
+        } as Chapter);
+      }
+      
+      callback(chapters);
+    });
+  }
+};
+
+// Recording CRUD operations - users/{userId}/chapters/{chapterId}/recordings
+export const recordingsService = {
+  // Add a new recording to a chapter
+  addRecording: async (userId: string, chapterId: string, recording: Omit<Recording, 'id' | 'chapterId'>): Promise<string> => {
+    const recordingsRef = collection(db, 'users', userId, 'chapters', chapterId, 'recordings');
+    const docRef = await addDoc(recordingsRef, {
+      ...recording,
+      chapterId,
+      date: new Date().toISOString()
+    });
+    return docRef.id;
+  },
+
+  // Upload audio file and add recording
+  uploadRecordingWithAudio: async (
+    userId: string, 
+    chapterId: string, 
+    audioBlob: Blob, 
+    recording: Omit<Recording, 'id' | 'chapterId' | 'audioUrl'>
+  ): Promise<string> => {
+    // Upload audio file to Firebase Storage
+    const audioRef = ref(storage, `users/${userId}/chapters/${chapterId}/recordings/${Date.now()}.webm`);
+    const snapshot = await uploadBytes(audioRef, audioBlob);
+    const audioUrl = await getDownloadURL(snapshot.ref);
+    
+    // Add recording metadata to Firestore
+    return await recordingsService.addRecording(userId, chapterId, {
+      ...recording,
+      audioUrl
+    });
+  },
+
+  // Get all recordings for a chapter
+  getRecordings: async (userId: string, chapterId: string): Promise<Recording[]> => {
+    const recordingsRef = collection(db, 'users', userId, 'chapters', chapterId, 'recordings');
+    const q = query(recordingsRef, orderBy('date', 'desc'));
+    const snapshot = await getDocs(q);
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      chapterId
+    })) as Recording[];
+  },
+
+  // Update a recording
+  updateRecording: async (userId: string, chapterId: string, recordingId: string, updates: Partial<Recording>): Promise<void> => {
+    const recordingRef = doc(db, 'users', userId, 'chapters', chapterId, 'recordings', recordingId);
+    await updateDoc(recordingRef, updates);
+  },
+
+  // Delete a recording
+  deleteRecording: async (userId: string, chapterId: string, recordingId: string): Promise<void> => {
+    const recordingRef = doc(db, 'users', userId, 'chapters', chapterId, 'recordings', recordingId);
+    await deleteDoc(recordingRef);
+  }
+};

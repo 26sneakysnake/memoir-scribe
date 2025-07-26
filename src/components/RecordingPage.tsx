@@ -3,25 +3,36 @@ import { Mic, MicOff, Pause, Play, Square, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { chaptersService, recordingsService, Chapter } from '@/services/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 interface RecordingPageProps {
   onRecordingStateChange: (isRecording: boolean) => void;
 }
 
 const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
   const [recordingTitle, setRecordingTitle] = useState('');
+  const [selectedChapterId, setSelectedChapterId] = useState<string>('');
   const [hasRecording, setHasRecording] = useState(false);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [saving, setSaving] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const animationRef = useRef<number | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     return () => {
@@ -31,12 +42,33 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
     };
   }, []);
 
+  // Load user's chapters
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribe = chaptersService.listenToChapters(currentUser.uid, (chaptersData) => {
+      setChapters(chaptersData);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
+      // Clear previous recording chunks
+      recordedChunksRef.current = [];
+      
       // Setup MediaRecorder
       mediaRecorderRef.current = new MediaRecorder(stream);
+      
+      // Setup data handling
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
       
       // Setup audio visualization
       audioContextRef.current = new AudioContext();
@@ -59,6 +91,11 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       
     } catch (error) {
       console.error('Error accessing microphone:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Unable to access microphone. Please check permissions.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -121,15 +158,56 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const saveRecording = () => {
-    if (hasRecording && recordingTitle.trim()) {
-      // Frontend only: Upload to cloud storage
-      // Backend will handle: transcription, AI processing, chapter generation
-      console.log('Uploading recording to cloud:', recordingTitle);
+  const saveRecording = async () => {
+    if (!hasRecording || !recordingTitle.trim() || !selectedChapterId || !currentUser) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a title and select a chapter.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSaving(true);
+    
+    try {
+      // Create audio blob from recorded chunks
+      const audioBlob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
+      
+      // Upload recording with audio to Firebase
+      await recordingsService.uploadRecordingWithAudio(
+        currentUser.uid,
+        selectedChapterId,
+        audioBlob,
+        {
+          title: recordingTitle,
+          duration: recordingTime,
+          date: new Date().toISOString()
+        }
+      );
+
+      toast({
+        title: "Recording Saved",
+        description: "Your recording has been uploaded successfully.",
+      });
+
+      // Reset form
       setRecordingTime(0);
       setHasRecording(false);
       setRecordingTitle('');
+      setSelectedChapterId('');
       setAudioLevel(0);
+      recordedChunksRef.current = [];
+      
+    } catch (error) {
+      console.error('Error saving recording:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to save recording. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -291,13 +369,34 @@ const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; is
               placeholder="Name this memory..."
               className="w-full px-4 py-3 text-base rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-organic"
             />
+            
+            <Select value={selectedChapterId} onValueChange={setSelectedChapterId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a chapter to save this recording to..." />
+              </SelectTrigger>
+              <SelectContent>
+                {chapters.map((chapter) => (
+                  <SelectItem key={chapter.id} value={chapter.id}>
+                    {chapter.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
             <div className="flex space-x-3">
               <button
                 onClick={saveRecording}
-                disabled={!recordingTitle.trim()}
-                className="flex-1 bg-primary text-primary-foreground py-3 px-4 md:px-6 text-base rounded-lg hover:bg-primary/90 transition-organic font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!recordingTitle.trim() || !selectedChapterId || saving}
+                className="flex-1 bg-primary text-primary-foreground py-3 px-4 md:px-6 text-base rounded-lg hover:bg-primary/90 transition-organic font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Save Recording
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Recording'
+                )}
               </button>
               <button
                 onClick={deleteRecording}

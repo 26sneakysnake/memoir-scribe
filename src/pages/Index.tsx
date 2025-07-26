@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import RecordingPage from '@/components/RecordingPage';
-import StoriesPage from '@/components/StoriesPage';
+import ChaptersPage from '@/components/ChaptersPage';
 import MarketplacePage from '@/components/MarketplacePage';
 import SettingsPage from '@/components/SettingsPage';
 
@@ -14,7 +14,7 @@ const Index = () => {
       case 'record':
         return <RecordingPage onRecordingStateChange={setIsRecording} />;
       case 'stories':
-        return <StoriesPage />;
+        return <ChaptersPage />;
       case 'publish':
         return <MarketplacePage />;
       case 'settings':
