@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, MoreVertical, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,7 @@ const ChaptersPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
   const [playingRecording, setPlayingRecording] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [newChapter, setNewChapter] = useState({
     title: '',
     description: '',
@@ -122,8 +123,51 @@ const ChaptersPage = () => {
     }
   };
 
-  const togglePlayRecording = (recordingId: string) => {
-    setPlayingRecording(playingRecording === recordingId ? null : recordingId);
+  const togglePlayRecording = async (recordingId: string) => {
+    if (playingRecording === recordingId) {
+      // Stop playing
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setPlayingRecording(null);
+    } else {
+      // Start playing
+      const recording = chapters
+        .flatMap(chapter => chapter.recordings)
+        .find(r => r.id === recordingId);
+      
+      if (recording?.audioUrl) {
+        try {
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+          
+          audioRef.current = new Audio(recording.audioUrl);
+          audioRef.current.onended = () => setPlayingRecording(null);
+          audioRef.current.onerror = () => {
+            console.error('Error playing audio');
+            setPlayingRecording(null);
+            toast({
+              title: "Playback Error",
+              description: "Unable to play recording. Please try again.",
+              variant: "destructive",
+            });
+          };
+          
+          await audioRef.current.play();
+          setPlayingRecording(recordingId);
+        } catch (error) {
+          console.error('Error playing audio:', error);
+          setPlayingRecording(null);
+          toast({
+            title: "Playback Error",
+            description: "Unable to play recording. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    }
   };
 
   if (loading) {
