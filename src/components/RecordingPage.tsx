@@ -172,7 +172,7 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       <div className="vintage-card rounded-2xl p-8 max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="mb-6">
-            <div className="text-6xl font-serif text-primary font-bold">
+            <div className="text-4xl font-serif text-primary font-bold">
               {formatTime(recordingTime)}
             </div>
           </div>
@@ -181,10 +181,12 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
           </p>
         </div>
 
-        {/* Audio Visualization */}
-        <div className="mb-10">
-          <WaveVisualization audioLevel={audioLevel} isRecording={isRecording} />
-        </div>
+        {/* Audio Visualization - Only when recording */}
+        {isRecording && (
+          <div className="mb-8">
+            <WaveVisualization audioLevel={audioLevel} isRecording={isRecording} />
+          </div>
+        )}
 
         {/* Recording Controls */}
         <div className="flex items-center justify-center space-x-6 mb-8">
@@ -192,39 +194,47 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
             onClick={startRecording}
             disabled={isRecording}
             className={cn(
-              "w-16 h-16 rounded-full flex items-center justify-center transition-organic",
+              "relative w-16 h-16 rounded-full flex items-center justify-center transition-organic",
               "bg-primary text-primary-foreground hover:bg-primary/90",
               "hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed",
-              isRecording && "vintage-pulse"
+              "border-2 border-primary/30 shadow-vintage",
+              isRecording && "vintage-pulse ink-drop"
             )}
           >
             <Mic className="w-6 h-6" />
+            {/* Animation au clic */}
+            {!isRecording && (
+              <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-pulse"></div>
+            )}
+            {isRecording && (
+              <div className="absolute -inset-2 rounded-full border-2 border-accent/50 animate-ping"></div>
+            )}
           </button>
 
           <button
             onClick={isPaused ? resumeRecording : pauseRecording}
             disabled={!isRecording && !isPaused}
             className={cn(
-              "w-16 h-16 rounded-full flex items-center justify-center transition-organic",
+              "w-14 h-14 rounded-full flex items-center justify-center transition-organic",
               "bg-secondary text-secondary-foreground hover:bg-secondary/90 hover:scale-105",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "border-2 border-secondary/30 shadow-vintage"
             )}
           >
-            {isPaused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
+            {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
           </button>
 
           <button
             onClick={stopRecording}
             disabled={!isRecording && !isPaused}
             className={cn(
-              "w-16 h-16 rounded-full flex items-center justify-center transition-organic",
+              "w-14 h-14 rounded-full flex items-center justify-center transition-organic",
               "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "border-2 border-destructive/30 shadow-vintage"
             )}
           >
-            <Square className="w-6 h-6" />
+            <Square className="w-5 h-5" />
           </button>
         </div>
 
