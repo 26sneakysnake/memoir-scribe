@@ -52,44 +52,44 @@ const MarketplacePage = () => {
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [publishPrice, setPublishPrice] = useState<string>('4.99');
 
-  // Exemples de stories publiées (gratuites pour démonstration)
+  // Example published stories (free for demonstration)
   const featuredStories: PublishedStory[] = [
     {
       id: '1',
-      title: 'Mémoires de Grand-mère',
-      description: 'Les souvenirs touchants d\'une grand-mère française racontant son enfance pendant la guerre.',
+      title: "Grandmother's Memories",
+      description: "Touching memories of a French grandmother recounting her childhood during the war.",
       author: 'Marie Leclerc',
       authorAvatar: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=face',
-      category: 'Histoire Familiale',
+      category: 'Family History',
       duration: 45,
       price: 0,
       downloads: 1247,
       rating: 4.8,
-      tags: ['Famille', 'Histoire', 'Guerre', 'Émotionnel'],
+      tags: ['Family', 'History', 'War', 'Emotional'],
       isPremium: false,
       publishedDate: '2024-01-15',
       audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav'
     },
     {
       id: '2',
-      title: 'Voyage en Provence',
-      description: 'Récit captivant d\'un voyage culinaire à travers la Provence, avec anecdotes et recettes.',
+      title: 'Journey to Provence',
+      description: 'Captivating tale of a culinary journey through Provence, with anecdotes and recipes.',
       author: 'Pierre Dubois',
       authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      category: 'Voyage',
+      category: 'Travel',
       duration: 32,
       price: 0,
       downloads: 856,
       rating: 4.6,
-      tags: ['Voyage', 'Cuisine', 'Provence', 'Culture'],
+      tags: ['Travel', 'Cuisine', 'Provence', 'Culture'],
       isPremium: false,
       publishedDate: '2024-01-20',
       audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/PinkPanther30.wav'
     },
     {
       id: '3',
-      title: 'Mon Premier Amour',
-      description: 'Une histoire romantique touchante racontée avec humour et nostalgie.',
+      title: 'My First Love',
+      description: 'A touching romantic story told with humor and nostalgia.',
       author: 'Sophie Martin',
       authorAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b372?w=100&h=100&fit=crop&crop=face',
       category: 'Romance',
@@ -97,30 +97,30 @@ const MarketplacePage = () => {
       price: 0,
       downloads: 623,
       rating: 4.9,
-      tags: ['Romance', 'Jeunesse', 'Humour', 'Nostalgie'],
+      tags: ['Romance', 'Youth', 'Humor', 'Nostalgia'],
       isPremium: false,
       publishedDate: '2024-01-25',
       audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav'
     },
     {
       id: '4',
-      title: 'Secrets de Famille',
-      description: 'Révélations surprenantes sur l\'histoire secrète d\'une famille bourgeoise parisienne.',
+      title: 'Family Secrets',
+      description: 'Surprising revelations about the secret history of a bourgeois Parisian family.',
       author: 'Antoine Rousseau',
       authorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-      category: 'Mystère',
+      category: 'Mystery',
       duration: 52,
       price: 0,
       downloads: 1089,
       rating: 4.7,
-      tags: ['Mystère', 'Famille', 'Secrets', 'Paris'],
+      tags: ['Mystery', 'Family', 'Secrets', 'Paris'],
       isPremium: false,
       publishedDate: '2024-01-10',
       audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav'
     }
   ];
 
-  // Charger les chapitres de l'utilisateur
+  // Load user chapters
   useEffect(() => {
     const loadUserChapters = async () => {
       if (!currentUser) return;
@@ -148,35 +148,35 @@ const MarketplacePage = () => {
     if (!story?.audioUrl) return;
 
     if (playingAudio === storyId && currentAudio) {
-      // Arrêter la lecture
+      // Stop playback
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setPlayingAudio(null);
       setCurrentAudio(null);
     } else {
-      // Arrêter l'audio précédent s'il y en a un
+      // Stop previous audio if any
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
 
-      // Démarrer la nouvelle lecture
+      // Start new playback
       const audio = new Audio(story.audioUrl);
       audio.play().then(() => {
         setPlayingAudio(storyId);
         setCurrentAudio(audio);
         
-        // Gérer la fin de lecture
+        // Handle end of playback
         audio.onended = () => {
           setPlayingAudio(null);
           setCurrentAudio(null);
         };
         
-        // Gérer les erreurs
+        // Handle errors
         audio.onerror = () => {
           toast({
-            title: "Erreur de lecture",
-            description: "Impossible de lire ce fichier audio.",
+            title: "Playback error",
+            description: "Unable to play this audio file.",
             variant: "destructive",
           });
           setPlayingAudio(null);
@@ -184,8 +184,8 @@ const MarketplacePage = () => {
         };
       }).catch(() => {
         toast({
-          title: "Erreur de lecture",
-          description: "Impossible de lire ce fichier audio.",
+          title: "Playback error",
+          description: "Unable to play this audio file.",
           variant: "destructive",
         });
       });
@@ -197,14 +197,14 @@ const MarketplacePage = () => {
     if (newLiked.has(storyId)) {
       newLiked.delete(storyId);
       toast({
-        title: "Retiré des favoris",
-        description: "Cette histoire a été retirée de vos favoris.",
+        title: "Removed from favorites",
+        description: "This story has been removed from your favorites.",
       });
     } else {
       newLiked.add(storyId);
       toast({
-        title: "Ajouté aux favoris",
-        description: "Cette histoire a été ajoutée à vos favoris.",
+        title: "Added to favorites",
+        description: "This story has been added to your favorites.",
       });
     }
     setLikedStories(newLiked);
@@ -212,19 +212,19 @@ const MarketplacePage = () => {
 
   const handlePurchase = (story: PublishedStory) => {
     if (story.price === 0) {
-      // Ajout gratuit à la bibliothèque
+      // Free addition to library
       const newOwned = new Set(ownedStories);
       newOwned.add(story.id);
       setOwnedStories(newOwned);
       
       toast({
-        title: "Histoire ajoutée !",
-        description: `"${story.title}" a été ajoutée à votre bibliothèque gratuitement.`,
+        title: "Story added!",
+        description: `"${story.title}" has been added to your library for free.`,
       });
     } else {
       toast({
-        title: "Achat simulé",
-        description: `Vous avez acheté "${story.title}" pour ${story.price}€. Intégration Stripe à venir.`,
+        title: "Purchase simulated",
+        description: `You have purchased "${story.title}" for $${story.price}. Stripe integration coming soon.`,
       });
     }
   };
@@ -239,8 +239,8 @@ const MarketplacePage = () => {
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast({
-        title: "Lien copié",
-        description: "Le lien de cette histoire a été copié dans le presse-papiers.",
+        title: "Link copied",
+        description: "The link to this story has been copied to the clipboard.",
       });
     }
   };
@@ -248,16 +248,16 @@ const MarketplacePage = () => {
   const handlePublishChapter = async () => {
     if (!selectedChapter) {
       toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner un chapitre à publier.",
+        title: "Error",
+        description: "Please select a chapter to publish.",
         variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: "Publication simulée",
-      description: `Votre chapitre sera publié au prix de ${publishPrice}€. Fonctionnalité en développement.`,
+      title: "Publication simulated",
+      description: `Your chapter will be published at the price of $${publishPrice}. Feature in development.`,
     });
     setIsPublishDialogOpen(false);
     setSelectedChapter('');
@@ -281,7 +281,7 @@ const MarketplacePage = () => {
             </Avatar>
             <div>
               <CardTitle className="text-lg leading-tight">{story.title}</CardTitle>
-              <p className="text-sm text-muted-foreground">par {story.author}</p>
+              <p className="text-sm text-muted-foreground">by {story.author}</p>
             </div>
           </div>
           {story.isPremium && (
@@ -334,7 +334,7 @@ const MarketplacePage = () => {
               ) : (
                 <Play className="w-4 h-4" />
               )}
-              <span>Aperçu</span>
+              <span>Preview</span>
             </Button>
             
             <Button
@@ -358,10 +358,10 @@ const MarketplacePage = () => {
           <div className="flex items-center space-x-2">
             {story.price === 0 ? (
               <Badge variant="secondary" className="text-green-600 bg-green-50 border-green-200">
-                Gratuit
+                Free
               </Badge>
             ) : (
-              <span className="text-lg font-bold text-primary">{story.price}€</span>
+              <span className="text-lg font-bold text-primary">${story.price}</span>
             )}
             <Button 
               onClick={() => handlePurchase(story)}
@@ -371,7 +371,7 @@ const MarketplacePage = () => {
               }`}
               disabled={ownedStories.has(story.id)}
             >
-              {ownedStories.has(story.id) ? 'Dans ma bibliothèque' : story.price === 0 ? 'Ajouter' : 'Acheter'}
+              {ownedStories.has(story.id) ? 'In my library' : story.price === 0 ? 'Add' : 'Buy'}
             </Button>
           </div>
         </div>
@@ -383,10 +383,10 @@ const MarketplacePage = () => {
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Marketplace des Mémoires
+          Memory Marketplace
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Découvrez des histoires authentiques, partagez vos propres mémoires et connectez-vous avec une communauté passionnée.
+          Discover authentic stories, share your own memories and connect with a passionate community.
         </p>
       </div>
 
@@ -394,35 +394,35 @@ const MarketplacePage = () => {
         <TabsList className="grid w-full grid-cols-3 glass-card">
           <TabsTrigger value="explore" className="flex items-center space-x-2">
             <TrendingUp className="w-4 h-4" />
-            <span>Explorer</span>
+            <span>Explore</span>
           </TabsTrigger>
           <TabsTrigger value="publish" className="flex items-center space-x-2">
             <Share2 className="w-4 h-4" />
-            <span>Publier</span>
+            <span>Publish</span>
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center space-x-2">
             <Users className="w-4 h-4" />
-            <span>Mes Ventes</span>
+            <span>My Sales</span>
           </TabsTrigger>
         </TabsList>
 
-        {/* Explorer Tab */}
+        {/* Explore Tab */}
         <TabsContent value="explore" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {featuredStories.map(renderStoryCard)}
           </div>
         </TabsContent>
 
-        {/* Publier Tab */}
+        {/* Publish Tab */}
         <TabsContent value="publish" className="space-y-6">
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Share2 className="w-5 h-5" />
-                <span>Publier vos Mémoires</span>
+                <span>Publish Your Memories</span>
               </CardTitle>
               <CardDescription>
-                Transformez vos enregistrements en histoires payantes et partagez-les avec la communauté.
+                Transform your recordings into paid stories and share them with the community.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -437,7 +437,7 @@ const MarketplacePage = () => {
                             {chapter.description}
                           </p>
                           <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                            <span>{chapter.recordingsCount} enregistrements</span>
+                            <span>{chapter.recordingsCount} recordings</span>
                             <span>{formatDuration(chapter.totalDuration)}</span>
                           </div>
                           <Dialog open={isPublishDialogOpen} onOpenChange={setIsPublishDialogOpen}>
@@ -446,58 +446,58 @@ const MarketplacePage = () => {
                                 className="w-full" 
                                 onClick={() => setSelectedChapter(chapter.id)}
                               >
-                                Publier ce chapitre
+                                Publish this chapter
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="bg-background border border-border">
                               <DialogHeader>
-                                <DialogTitle>Publier "{chapter.title}"</DialogTitle>
+                                <DialogTitle>Publish "{chapter.title}"</DialogTitle>
                                 <DialogDescription>
-                                  Configurez les détails de publication de votre chapitre.
+                                  Configure the publication details of your chapter.
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4">
                                 <div className="space-y-2">
-                                  <label className="text-sm font-medium">Prix de vente (€)</label>
+                                  <label className="text-sm font-medium">Sale price ($)</label>
                                   <Select value={publishPrice} onValueChange={setPublishPrice}>
                                     <SelectTrigger>
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-background border border-border shadow-lg z-50">
-                                      <SelectItem value="2.99">2.99€</SelectItem>
-                                      <SelectItem value="4.99">4.99€</SelectItem>
-                                      <SelectItem value="7.99">7.99€</SelectItem>
-                                      <SelectItem value="9.99">9.99€</SelectItem>
-                                      <SelectItem value="12.99">12.99€</SelectItem>
+                                      <SelectItem value="2.99">$2.99</SelectItem>
+                                      <SelectItem value="4.99">$4.99</SelectItem>
+                                      <SelectItem value="7.99">$7.99</SelectItem>
+                                      <SelectItem value="9.99">$9.99</SelectItem>
+                                      <SelectItem value="12.99">$12.99</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-sm font-medium">Catégorie</label>
-                                  <Select defaultValue="famille">
+                                  <label className="text-sm font-medium">Category</label>
+                                  <Select defaultValue="family">
                                     <SelectTrigger>
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-background border border-border shadow-lg z-50">
-                                      <SelectItem value="famille">Histoire Familiale</SelectItem>
-                                      <SelectItem value="voyage">Voyage</SelectItem>
+                                      <SelectItem value="family">Family History</SelectItem>
+                                      <SelectItem value="travel">Travel</SelectItem>
                                       <SelectItem value="romance">Romance</SelectItem>
-                                      <SelectItem value="mystere">Mystère</SelectItem>
-                                      <SelectItem value="aventure">Aventure</SelectItem>
+                                      <SelectItem value="mystery">Mystery</SelectItem>
+                                      <SelectItem value="adventure">Adventure</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-sm font-medium">Mots-clés (séparés par des virgules)</label>
-                                  <Input placeholder="famille, nostalgie, émotionnel..." />
+                                  <label className="text-sm font-medium">Keywords (comma separated)</label>
+                                  <Input placeholder="family, nostalgia, emotional..." />
                                 </div>
                               </div>
                               <DialogFooter>
                                 <Button variant="outline" onClick={() => setIsPublishDialogOpen(false)}>
-                                  Annuler
+                                  Cancel
                                 </Button>
                                 <Button onClick={handlePublishChapter}>
-                                  Publier maintenant
+                                  Publish now
                                 </Button>
                               </DialogFooter>
                             </DialogContent>
@@ -511,9 +511,9 @@ const MarketplacePage = () => {
                 <div className="text-center py-12">
                   <div className="space-y-4">
                     <Volume2 className="w-16 h-16 mx-auto text-muted-foreground" />
-                    <h3 className="text-lg font-semibold">Aucun chapitre à publier</h3>
+                    <h3 className="text-lg font-semibold">No chapters to publish</h3>
                     <p className="text-muted-foreground max-w-md mx-auto">
-                      Créez d'abord vos enregistrements et organisez-les en chapitres dans l'onglet "Stories" pour pouvoir les publier ici.
+                      First create your recordings and organize them into chapters in the "Stories" tab to be able to publish them here.
                     </p>
                   </div>
                 </div>
@@ -529,8 +529,8 @@ const MarketplacePage = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Revenus totaux</p>
-                    <p className="text-2xl font-bold text-green-600">47.89€</p>
+                    <p className="text-sm text-muted-foreground">Total revenue</p>
+                    <p className="text-2xl font-bold text-green-600">$47.89</p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-green-600" />
                 </div>
@@ -541,7 +541,7 @@ const MarketplacePage = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Téléchargements</p>
+                    <p className="text-sm text-muted-foreground">Downloads</p>
                     <p className="text-2xl font-bold text-blue-600">156</p>
                   </div>
                   <Download className="w-8 h-8 text-blue-600" />
@@ -553,7 +553,7 @@ const MarketplacePage = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Note moyenne</p>
+                    <p className="text-sm text-muted-foreground">Average rating</p>
                     <p className="text-2xl font-bold text-yellow-600">4.7</p>
                   </div>
                   <Star className="w-8 h-8 text-yellow-600 fill-current" />
@@ -564,17 +564,17 @@ const MarketplacePage = () => {
 
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Mes Publications</CardTitle>
+              <CardTitle>My Publications</CardTitle>
               <CardDescription>
-                Gérez vos histoires publiées et consultez leurs performances.
+                Manage your published stories and view their performance.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-12">
                 <Share2 className="w-16 h-16 mx-auto text-muted-foreground" />
-                <h3 className="text-lg font-semibold mt-4">Aucune publication pour le moment</h3>
+                <h3 className="text-lg font-semibold mt-4">No publications yet</h3>
                 <p className="text-muted-foreground mt-2">
-                  Vos histoires publiées apparaîtront ici avec leurs statistiques de vente.
+                  Your published stories will appear here with their sales statistics.
                 </p>
               </div>
             </CardContent>
