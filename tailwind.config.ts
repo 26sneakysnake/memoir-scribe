@@ -20,6 +20,8 @@ export default {
 		extend: {
 			fontFamily: {
 				'cursive': ['Dancing Script', 'cursive'],
+				'serif': ['Crimson Text', 'Georgia', 'serif'],
+				'sans': ['Inter', 'system-ui', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
