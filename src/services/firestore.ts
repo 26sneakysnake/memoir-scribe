@@ -169,8 +169,8 @@ export const recordingsService = {
     
     try {
       // Upload audio file to Firebase Storage
-      const fileName = `${chapterId}_${Date.now()}.webm`;
-      const storagePath = `users/${userId}/recordings/${fileName}`;
+      const fileName = `${Date.now()}.webm`;
+      const storagePath = `users/${userId}/chapters/${chapterId}/recordings/${fileName}`;
       console.log('📤 Uploading to path:', storagePath);
       
       const audioRef = ref(storage, storagePath);
