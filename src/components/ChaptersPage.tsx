@@ -10,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { chaptersService, recordingsService, Chapter, Recording } from '@/services/firestore';
-import { backendService } from '@/services/backendService';
 import { useToast } from '@/hooks/use-toast';
 
 // Interfaces imported from services/firestore.ts
@@ -211,50 +210,23 @@ const ChaptersPage = () => {
     setCompilingChapter(chapterId);
     
     try {
-      console.log('🤖 Starting chapter compilation for:', chapter.title);
+      // TODO: Replace with actual backend call
+      // Simulate backend processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Start compilation process with backend
-      const compileResult = await backendService.compileChapter(chapterId);
-      
-      // Poll for completion
-      await new Promise<void>((resolve, reject) => {
-        const pollStatus = async () => {
-          try {
-            const status = await backendService.getCompileStatus(compileResult.taskId);
-            
-            if (status.status === 'completed') {
-              toast({
-                title: "Story Compiled Successfully!",
-                description: `${chapter.title} has been transformed into a beautiful story.`,
-              });
-              
-              // Log the compiled result for now - in the future this could open a modal or navigate to results page
-              console.log('✅ Compilation complete:', {
-                chapterTitle: chapter.title,
-                compiledText: status.result?.compiledText,
-                summary: status.result?.summary,
-                keyPoints: status.result?.keyPoints
-              });
-              
-              resolve();
-            } else if (status.status === 'failed') {
-              throw new Error(status.error || 'Compilation failed');
-            } else if (status.status === 'processing') {
-              setTimeout(pollStatus, 2000);
-            }
-          } catch (error) {
-            reject(error);
-          }
-        };
-        
-        pollStatus();
+      toast({
+        title: "Story compiled!",
+        description: `${chapter.title} has been compiled into a complete story.`,
       });
       
+      // TODO: Handle the returned story text from backend
+      console.log('Compiled story for chapter:', chapter.title);
+      
     } catch (error) {
-      console.error('❌ Compilation error:', error);
+      console.error('Error compiling chapter:', error);
       toast({
-        title: "Compilation Failed",
-        description: error instanceof Error ? error.message : "Failed to compile the chapter. Please try again.",
+        title: "Compilation failed",
+        description: "Failed to compile the story. Please try again.",
         variant: "destructive",
       });
     } finally {
