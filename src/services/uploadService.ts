@@ -81,25 +81,5 @@ export const uploadService = {
       console.error('❌ Error uploading marketplace asset:', error);
       throw error;
     }
-  },
-
-  // Upload audio for AI processing
-  uploadAudio: async (userId: string, chapterId: string, file: File): Promise<string> => {
-    try {
-      console.log('📤 Uploading audio for user:', userId, 'chapter:', chapterId);
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `audio_${Date.now()}.${fileExtension}`;
-      const storagePath = `users/${userId}/chapters/${chapterId}/audio/${fileName}`;
-      
-      const audioRef = ref(storage, storagePath);
-      const snapshot = await uploadBytes(audioRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      console.log('✅ Audio uploaded successfully');
-      return downloadURL;
-    } catch (error) {
-      console.error('❌ Error uploading audio:', error);
-      throw error;
-    }
   }
 };
