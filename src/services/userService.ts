@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
+import { uploadService } from './uploadService';
 
 export interface UserSettings {
   name: string;
@@ -88,22 +88,7 @@ export const userService = {
 
   // Upload avatar image
   uploadAvatar: async (userId: string, file: File): Promise<string> => {
-    try {
-      console.log('📤 Uploading avatar for user:', userId);
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `avatar_${Date.now()}.${fileExtension}`;
-      const storagePath = `users/${userId}/recordings/${fileName}`; // Use recordings path which is allowed
-      
-      const avatarRef = ref(storage, storagePath);
-      const snapshot = await uploadBytes(avatarRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      console.log('✅ Avatar uploaded successfully');
-      return downloadURL;
-    } catch (error) {
-      console.error('❌ Error uploading avatar:', error);
-      throw error;
-    }
+    return await uploadService.uploadAvatar(userId, file);
   },
 
   // Initialize user settings if they don't exist
