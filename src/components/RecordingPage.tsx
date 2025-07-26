@@ -168,22 +168,12 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       </div>
 
       {/* Recording Interface */}
-      <div className="vintage-card rounded-3xl p-10 max-w-3xl mx-auto relative overflow-hidden">
-        {/* Decorative corner elements */}
-        <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-primary/30 rounded-tl-lg"></div>
-        <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-primary/30 rounded-tr-lg"></div>
-        <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-primary/30 rounded-bl-lg"></div>
-        <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-primary/30 rounded-br-lg"></div>
-        
-        <div className="text-center mb-10">
-          <div className="relative inline-block mb-6">
-            <div className="vintage-card rounded-full p-6 bg-gradient-to-br from-card to-background border-2 border-primary/20">
-              <div className="text-7xl font-serif text-primary font-bold tracking-wider">
-                {formatTime(recordingTime)}
-              </div>
+      <div className="vintage-card rounded-2xl p-8 max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="mb-6">
+            <div className="text-6xl font-serif text-primary font-bold">
+              {formatTime(recordingTime)}
             </div>
-            {/* Vintage clock decorations */}
-            <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-accent rounded-full"></div>
           </div>
           <p className="text-lg font-serif text-muted-foreground italic">
             {isRecording ? 'Your story is being captured...' : isPaused ? 'Take a breath, then continue' : 'Press the seal to begin your tale'}
@@ -196,25 +186,18 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
         </div>
 
         {/* Recording Controls */}
-        <div className="flex items-center justify-center space-x-8 mb-10">
+        <div className="flex items-center justify-center space-x-6 mb-8">
           <button
             onClick={startRecording}
             disabled={isRecording}
             className={cn(
-              "relative w-20 h-20 rounded-full flex items-center justify-center transition-organic",
-              "bg-gradient-to-br from-primary to-primary-glow text-primary-foreground",
-              "hover:scale-105 hover:shadow-glow",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-              "border-4 border-accent/30 shadow-vintage",
+              "w-16 h-16 rounded-full flex items-center justify-center transition-organic",
+              "bg-primary text-primary-foreground hover:bg-primary/90",
+              "hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed",
               isRecording && "vintage-pulse"
             )}
           >
-            <Mic className="w-8 h-8" />
-            {/* Wax seal effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-t from-accent/20 to-transparent"></div>
-            {!isRecording && (
-              <div className="absolute -inset-1 rounded-full border-2 border-primary/20 animate-pulse"></div>
-            )}
+            <Mic className="w-6 h-6" />
           </button>
 
           <button
@@ -247,34 +230,27 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
         {/* Save Recording */}
         {hasRecording && (
           <div className="space-y-6 pt-6 border-t border-border/50">
-            <div className="relative">
-              <input
-                type="text"
-                value={recordingTitle}
-                onChange={(e) => setRecordingTitle(e.target.value)}
-                placeholder="Name this precious memory..."
-                className="w-full px-6 py-4 rounded-xl border-2 border-primary/20 bg-background/80 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-organic font-serif text-lg"
-              />
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-accent">
-                ✒️
-              </div>
-            </div>
+            <input
+              type="text"
+              value={recordingTitle}
+              onChange={(e) => setRecordingTitle(e.target.value)}
+              placeholder="Name this memory..."
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-organic"
+            />
             <button
               onClick={saveRecording}
-              className="w-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground py-4 px-8 rounded-xl hover:scale-105 transition-organic font-serif text-lg font-semibold shadow-glow ink-drop"
+              className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-primary/90 transition-organic font-medium"
             >
-              Preserve This Memory
+              Save Recording
             </button>
           </div>
         )}
       </div>
 
-      {/* Storyteller's Guide */}
-      <div className="vintage-card rounded-2xl p-8 max-w-3xl mx-auto mt-12 relative">
-        <div className="absolute top-6 left-6 text-4xl text-accent/30">❝</div>
-        <div className="absolute bottom-6 right-6 text-4xl text-accent/30 rotate-180">❝</div>
+      {/* Recording Tips */}
+      <div className="vintage-card rounded-xl p-6 max-w-2xl mx-auto mt-8">
         
-        <h3 className="text-2xl font-cursive font-bold text-primary mb-8 text-center">Storyteller's Guide</h3>
+        <h3 className="text-lg font-semibold text-primary mb-4">Recording Tips</h3>
         <div className="grid md:grid-cols-2 gap-6 font-serif text-foreground/90 leading-relaxed">
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
