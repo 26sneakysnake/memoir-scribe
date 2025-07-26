@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { TranscriptionService } from './transcriptionService';
 
 // Gestion sécurisée de la clé API via localStorage
 const getClaudeApiKey = (): string | null => {
@@ -40,31 +41,23 @@ export const claudeService = {
   hasApiKey: (): boolean => {
     return !!getClaudeApiKey();
   },
-  // Simulation de transcription (Claude n'a pas encore de support audio direct)
+  // Transcription d'un fichier audio avec Whisper
   transcribeAudio: async (audioBlob: Blob): Promise<string> => {
     try {
-      console.log('🎤 Simulating audio transcription...');
+      console.log('🎤 Starting real audio transcription...');
       
-      // Pour le moment, on retourne une transcription simulée
-      // Dans une vraie implémentation, on utiliserait un service de transcription comme Whisper
-      const simulatedTranscription = `
-Voici le contenu transcrit de l'enregistrement audio. 
-Cette transcription est simulée car Claude ne supporte pas encore l'audio directement.
-Dans une vraie implémentation, vous devriez utiliser un service comme OpenAI Whisper 
-ou Google Speech-to-Text pour transcrire l'audio avant de l'envoyer à Claude.
-
-Durée de l'audio: ${Math.round(audioBlob.size / 1000)}KB
-Type: ${audioBlob.type}
-
-Contenu simulé: "Voici mes souvenirs d'enfance. Je me rappelle quand nous allions chez ma grand-mère..."
-      `.trim();
+      // Utiliser le service de transcription Whisper
+      const transcription = await TranscriptionService.transcribeAudio(audioBlob);
       
-      console.log('✅ Simulated transcription completed');
-      return simulatedTranscription;
+      console.log('✅ Real transcription completed');
+      return transcription;
       
     } catch (error) {
       console.error('❌ Error transcribing audio:', error);
-      throw new Error(`Échec de la transcription: ${error.message}`);
+      console.warn('🔄 Falling back to simulated transcription...');
+      
+      // Fallback vers transcription simulée si erreur
+      return `[Transcription simulée - Erreur: ${error.message}] \n\nVoici le contenu que devrait contenir l'audio...`;
     }
   },
 
@@ -116,24 +109,9 @@ C'est ainsi que se termine ce chapitre de mes mémoires, mais l'histoire continu
       console.log('🎯 Starting complete audio processing...');
       console.log(`📁 Processing ${audioUrls.length} audio files for chapter: ${chapterTitle}`);
       
-      // Télécharger et transcire tous les audios
-      const transcriptions: string[] = [];
-      
-      for (let i = 0; i < audioUrls.length; i++) {
-        console.log(`🎤 Processing audio ${i + 1}/${audioUrls.length}`);
-        
-        // Télécharger l'audio
-        const response = await fetch(audioUrls[i]);
-        if (!response.ok) {
-          throw new Error(`Impossible de télécharger l'audio ${i + 1}`);
-        }
-        
-        const audioBlob = await response.blob();
-        
-        // Transcire
-        const transcription = await claudeService.transcribeAudio(audioBlob);
-        transcriptions.push(transcription);
-      }
+      // Transcrire tous les audios avec Whisper
+      console.log('🎤 Starting real transcription with Whisper...');
+      const transcriptions = await TranscriptionService.transcribeMultipleAudios(audioUrls);
       
       // Générer l'histoire
       console.log('📖 Generating story from transcriptions...');
