@@ -354,13 +354,6 @@ const ChaptersPage = () => {
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => handleCompileChapter(chapter.id)}
-                        disabled={chapter.recordings.length === 0 || compilingChapter === chapter.id}
-                      >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        {compilingChapter === chapter.id ? 'Compiling...' : 'Compile'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
                         onClick={() => handleDeleteChapter(chapter.id)}
                         className="text-destructive focus:text-destructive"
                       >
@@ -435,6 +428,24 @@ const ChaptersPage = () => {
                       ))}
                     </div>
                   )}
+                  
+                  {/* Compile Button */}
+                  <div className="mt-4 pt-4 border-t border-border/30">
+                    <Button
+                      onClick={() => handleCompileChapter(chapter.id)}
+                      disabled={chapter.recordings.length === 0 || compilingChapter === chapter.id}
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                      size="lg"
+                    >
+                      <BookOpen className="w-5 h-5 mr-2" />
+                      {compilingChapter === chapter.id ? 'Compiling Story...' : 'Compile Chapter'}
+                    </Button>
+                    {chapter.recordings.length === 0 && (
+                      <p className="text-xs text-muted-foreground mt-2 text-center">
+                        Add recordings to compile this chapter
+                      </p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
