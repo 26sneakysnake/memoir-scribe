@@ -37,9 +37,13 @@ export interface Chapter {
 export const chaptersService = {
   // Get all chapters for a user
   getChapters: async (userId: string): Promise<Chapter[]> => {
-    const chaptersRef = collection(db, 'users', userId, 'chapters');
-    const q = query(chaptersRef, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
+    console.log('🔍 Getting chapters for user:', userId);
+    try {
+      const chaptersRef = collection(db, 'users', userId, 'chapters');
+      const q = query(chaptersRef, orderBy('createdAt', 'desc'));
+      console.log('📚 Querying chapters collection...');
+      const snapshot = await getDocs(q);
+      console.log('✅ Query successful, found documents:', snapshot.docs.length);
     
     const chapters: Chapter[] = [];
     
@@ -63,7 +67,14 @@ export const chaptersService = {
       } as Chapter);
     }
     
-    return chapters;
+      console.log('📊 Processed chapters:', chapters.length);
+      return chapters;
+    } catch (error) {
+      console.error('❌ Error getting chapters:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      throw error;
+    }
   },
 
   // Add a new chapter
@@ -90,10 +101,13 @@ export const chaptersService = {
 
   // Listen to real-time changes
   listenToChapters: (userId: string, callback: (chapters: Chapter[]) => void) => {
-    const chaptersRef = collection(db, 'users', userId, 'chapters');
-    const q = query(chaptersRef, orderBy('createdAt', 'desc'));
-    
-    return onSnapshot(q, async (snapshot) => {
+    console.log('🔄 Setting up real-time listener for user:', userId);
+    try {
+      const chaptersRef = collection(db, 'users', userId, 'chapters');
+      const q = query(chaptersRef, orderBy('createdAt', 'desc'));
+      
+      return onSnapshot(q, async (snapshot) => {
+        console.log('📡 Real-time update received, documents:', snapshot.docs.length);
       const chapters: Chapter[] = [];
       
       for (const chapterDoc of snapshot.docs) {
@@ -116,8 +130,16 @@ export const chaptersService = {
         } as Chapter);
       }
       
-      callback(chapters);
-    });
+        callback(chapters);
+      }, (error) => {
+        console.error('❌ Error in chapters listener:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+      });
+    } catch (error) {
+      console.error('❌ Error setting up chapters listener:', error);
+      throw error;
+    }
   }
 };
 
