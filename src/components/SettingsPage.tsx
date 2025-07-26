@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, CreditCard, History, Volume2, Download, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,13 +9,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/AuthContext';
+import { userService, UserSettings } from '@/services/userService';
+import { useToast } from '@/hooks/use-toast';
 
 const SettingsPage = () => {
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
   const [userProfile, setUserProfile] = useState({
-    name: 'Marie Dubois',
-    email: 'marie.dubois@email.com',
+    name: '',
+    email: currentUser?.email || '',
     avatar: '',
-    phoneNumber: '+33 6 12 34 56 78'
+    phoneNumber: ''
   });
 
   const [audioSettings, setAudioSettings] = useState({
@@ -25,35 +34,109 @@ const SettingsPage = () => {
     autoTranscription: false
   });
 
+  // Load user settings on component mount
+  useEffect(() => {
+    const loadUserSettings = async () => {
+      if (!currentUser) return;
+      
+      try {
+        setLoading(true);
+        const settings = await userService.initializeUserIfNeeded(currentUser.uid, currentUser.email || '');
+        
+        setUserProfile({
+          name: settings.name,
+          email: currentUser.email || '',
+          avatar: settings.avatar || '',
+          phoneNumber: settings.phoneNumber
+        });
+        
+        setAudioSettings(settings.audioSettings);
+      } catch (error) {
+        console.error('Error loading user settings:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load settings. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserSettings();
+  }, [currentUser, toast]);
+
+  const handleProfileUpdate = async () => {
+    if (!currentUser) return;
+    
+    try {
+      setSaving(true);
+      await userService.updateUserSettings(currentUser.uid, {
+        name: userProfile.name,
+        phoneNumber: userProfile.phoneNumber,
+        avatar: userProfile.avatar,
+      });
+      
+      toast({
+        title: "Success",
+        description: "Profile updated successfully!",
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAudioSettingsUpdate = async (setting: string, value: boolean) => {
+    if (!currentUser) return;
+    
+    const newAudioSettings = { ...audioSettings, [setting]: value };
+    setAudioSettings(newAudioSettings);
+    
+    try {
+      await userService.updateUserSettings(currentUser.uid, {
+        audioSettings: newAudioSettings
+      });
+      
+      toast({
+        title: "Settings updated",
+        description: `${setting} has been ${value ? 'enabled' : 'disabled'}.`,
+      });
+    } catch (error) {
+      console.error('Error updating audio settings:', error);
+      // Revert the change on error
+      setAudioSettings(audioSettings);
+      toast({
+        title: "Error",
+        description: "Failed to update audio settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const subscriptionData = {
-    plan: 'Premium',
+    plan: 'Free',
     status: 'active',
     nextBilling: '2024-02-15',
-    price: '9.99€',
+    price: '0€',
     features: [
-      'Unlimited recordings',
-      '100GB cloud storage',
-      'Automatic transcription',
-      'Advanced export',
-      'Priority support'
+      'Basic recordings',
+      '1GB cloud storage',
+      'Standard export',
+      'Community support'
     ]
   };
 
   const historyData = [
-    { id: '1', action: 'Recording saved', item: 'My first steps', date: '2024-01-20', time: '2:30 PM' },
-    { id: '2', action: 'Chapter created', item: 'Childhood and Family', date: '2024-01-19', time: '4:45 PM' },
-    { id: '3', action: 'Export completed', item: 'Complete chapter', date: '2024-01-18', time: '10:15 AM' },
-    { id: '4', action: 'Profile updated', item: 'Personal information', date: '2024-01-17', time: '9:20 AM' },
+    { id: '1', action: 'Profile updated', item: 'Personal information', date: new Date().toISOString(), time: new Date().toLocaleTimeString() },
+    { id: '2', action: 'Settings changed', item: 'Audio preferences', date: new Date(Date.now() - 86400000).toISOString(), time: '4:45 PM' },
   ];
-
-  const handleProfileUpdate = () => {
-    // In a real app, this would update the user profile
-    console.log('Profile updated:', userProfile);
-  };
-
-  const handleAudioSettingsUpdate = (setting: string, value: boolean) => {
-    setAudioSettings(prev => ({ ...prev, [setting]: value }));
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -62,6 +145,19 @@ const SettingsPage = () => {
       year: 'numeric'
     });
   };
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground mt-2">Loading settings...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -146,9 +242,13 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Button variant="outline">Cancel</Button>
-                  <Button onClick={handleProfileUpdate} className="bg-primary hover:bg-primary/90">
-                    Save
+                  <Button variant="outline" disabled={saving}>Cancel</Button>
+                  <Button 
+                    onClick={handleProfileUpdate} 
+                    className="bg-primary hover:bg-primary/90"
+                    disabled={saving}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
                   </Button>
                 </div>
               </div>
