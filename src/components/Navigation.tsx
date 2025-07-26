@@ -23,7 +23,7 @@ const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) =>
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center glow-primary">
               <Mic className="w-4 h-4 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+            <h1 className="text-2xl font-cursive font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
               mémoire
             </h1>
           </div>
