@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic, BookOpen, Settings, User } from 'lucide-react';
+import { Mic, BookOpen, Settings, User, Feather } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavigationProps {
@@ -20,15 +20,15 @@ const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) =>
       <div className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center warm-glow relative">
-              <Mic className="w-5 h-5 text-primary-foreground" />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-accent/20 to-transparent"></div>
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-3xl font-cursive font-bold text-primary drop-shadow-sm">
+            <div className="relative">
+              <h1 className="text-3xl font-cursive font-bold text-primary drop-shadow-sm relative">
                 mémoire
+                {/* Vintage feather crossing through the text */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12">
+                  <Feather className="w-8 h-8 text-accent/60 drop-shadow-sm" strokeWidth={1.5} />
+                </div>
               </h1>
-              <span className="text-xs text-muted-foreground font-serif italic">preserving stories</span>
+              <span className="text-xs text-muted-foreground font-serif italic ml-2">preserving stories</span>
             </div>
           </div>
 
