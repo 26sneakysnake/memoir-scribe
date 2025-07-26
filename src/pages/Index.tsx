@@ -2,6 +2,8 @@ import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import RecordingPage from '@/components/RecordingPage';
 import ChaptersPage from '@/components/ChaptersPage';
+import ProcessingPage from '@/components/ProcessingPage';
+import MarketplacePage from '@/components/MarketplacePage';
 import SettingsPage from '@/components/SettingsPage';
 
 const Index = () => {
@@ -14,6 +16,10 @@ const Index = () => {
         return <RecordingPage onRecordingStateChange={setIsRecording} />;
       case 'chapters':
         return <ChaptersPage />;
+      case 'processing':
+        return <ProcessingPage />;
+      case 'marketplace':
+        return <MarketplacePage />;
       case 'settings':
         return <SettingsPage />;
       default:

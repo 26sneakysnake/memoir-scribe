@@ -118,8 +118,10 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
 
   const saveRecording = () => {
     if (hasRecording && recordingTitle.trim()) {
-      // In a real app, this would save to a backend
-      console.log('Saving recording:', recordingTitle);
+      // In a real app, this would upload to Firebase Storage
+      // and trigger the AI processing pipeline
+      console.log('Uploading to cloud storage:', recordingTitle);
+      console.log('Starting transcription process...');
       setRecordingTime(0);
       setHasRecording(false);
       setRecordingTitle('');

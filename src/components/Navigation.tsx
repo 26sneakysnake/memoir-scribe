@@ -12,6 +12,8 @@ const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) =>
   const tabs = [
     { id: 'record', label: 'Recording', icon: Mic },
     { id: 'chapters', label: 'Chapters', icon: BookOpen },
+    { id: 'processing', label: 'AI Processing', icon: Settings },
+    { id: 'marketplace', label: 'Publish', icon: User },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
