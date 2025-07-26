@@ -45,12 +45,14 @@ const MarketplacePage = () => {
   
   const [userChapters, setUserChapters] = useState<UserChapter[]>([]);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [likedStories, setLikedStories] = useState<Set<string>>(new Set());
+  const [ownedStories, setOwnedStories] = useState<Set<string>>(new Set());
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [publishPrice, setPublishPrice] = useState<string>('4.99');
 
-  // Exemples de stories publiées
+  // Exemples de stories publiées (gratuites pour démonstration)
   const featuredStories: PublishedStory[] = [
     {
       id: '1',
@@ -60,13 +62,13 @@ const MarketplacePage = () => {
       authorAvatar: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=face',
       category: 'Histoire Familiale',
       duration: 45,
-      price: 9.99,
+      price: 0,
       downloads: 1247,
       rating: 4.8,
       tags: ['Famille', 'Histoire', 'Guerre', 'Émotionnel'],
-      isPremium: true,
+      isPremium: false,
       publishedDate: '2024-01-15',
-      audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
+      audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav'
     },
     {
       id: '2',
@@ -76,13 +78,13 @@ const MarketplacePage = () => {
       authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
       category: 'Voyage',
       duration: 32,
-      price: 7.49,
+      price: 0,
       downloads: 856,
       rating: 4.6,
       tags: ['Voyage', 'Cuisine', 'Provence', 'Culture'],
       isPremium: false,
       publishedDate: '2024-01-20',
-      audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
+      audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/PinkPanther30.wav'
     },
     {
       id: '3',
@@ -92,13 +94,13 @@ const MarketplacePage = () => {
       authorAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b372?w=100&h=100&fit=crop&crop=face',
       category: 'Romance',
       duration: 28,
-      price: 5.99,
+      price: 0,
       downloads: 623,
       rating: 4.9,
       tags: ['Romance', 'Jeunesse', 'Humour', 'Nostalgie'],
       isPremium: false,
       publishedDate: '2024-01-25',
-      audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
+      audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav'
     },
     {
       id: '4',
@@ -108,13 +110,13 @@ const MarketplacePage = () => {
       authorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
       category: 'Mystère',
       duration: 52,
-      price: 12.99,
+      price: 0,
       downloads: 1089,
       rating: 4.7,
       tags: ['Mystère', 'Famille', 'Secrets', 'Paris'],
-      isPremium: true,
+      isPremium: false,
       publishedDate: '2024-01-10',
-      audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
+      audioUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav'
     }
   ];
 
@@ -142,15 +144,50 @@ const MarketplacePage = () => {
   }, [currentUser]);
 
   const toggleAudioPlay = (storyId: string) => {
-    if (playingAudio === storyId) {
+    const story = featuredStories.find(s => s.id === storyId);
+    if (!story?.audioUrl) return;
+
+    if (playingAudio === storyId && currentAudio) {
+      // Arrêter la lecture
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
       setPlayingAudio(null);
-      // Ici on arrêterait la lecture audio
+      setCurrentAudio(null);
     } else {
-      setPlayingAudio(storyId);
-      // Ici on démarrerait la lecture audio
-      toast({
-        title: "Aperçu audio",
-        description: "Fonctionnalité de lecture audio en cours de développement.",
+      // Arrêter l'audio précédent s'il y en a un
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      // Démarrer la nouvelle lecture
+      const audio = new Audio(story.audioUrl);
+      audio.play().then(() => {
+        setPlayingAudio(storyId);
+        setCurrentAudio(audio);
+        
+        // Gérer la fin de lecture
+        audio.onended = () => {
+          setPlayingAudio(null);
+          setCurrentAudio(null);
+        };
+        
+        // Gérer les erreurs
+        audio.onerror = () => {
+          toast({
+            title: "Erreur de lecture",
+            description: "Impossible de lire ce fichier audio.",
+            variant: "destructive",
+          });
+          setPlayingAudio(null);
+          setCurrentAudio(null);
+        };
+      }).catch(() => {
+        toast({
+          title: "Erreur de lecture",
+          description: "Impossible de lire ce fichier audio.",
+          variant: "destructive",
+        });
       });
     }
   };
@@ -174,10 +211,22 @@ const MarketplacePage = () => {
   };
 
   const handlePurchase = (story: PublishedStory) => {
-    toast({
-      title: "Achat simulé",
-      description: `Vous avez acheté "${story.title}" pour ${story.price}€. Intégration Stripe à venir.`,
-    });
+    if (story.price === 0) {
+      // Ajout gratuit à la bibliothèque
+      const newOwned = new Set(ownedStories);
+      newOwned.add(story.id);
+      setOwnedStories(newOwned);
+      
+      toast({
+        title: "Histoire ajoutée !",
+        description: `"${story.title}" a été ajoutée à votre bibliothèque gratuitement.`,
+      });
+    } else {
+      toast({
+        title: "Achat simulé",
+        description: `Vous avez acheté "${story.title}" pour ${story.price}€. Intégration Stripe à venir.`,
+      });
+    }
   };
 
   const handleShare = (story: PublishedStory) => {
@@ -307,12 +356,22 @@ const MarketplacePage = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-primary">{story.price}€</span>
+            {story.price === 0 ? (
+              <Badge variant="secondary" className="text-green-600 bg-green-50 border-green-200">
+                Gratuit
+              </Badge>
+            ) : (
+              <span className="text-lg font-bold text-primary">{story.price}€</span>
+            )}
             <Button 
               onClick={() => handlePurchase(story)}
-              className="bg-primary hover:bg-primary/90"
+              className={`${ownedStories.has(story.id) 
+                ? 'bg-green-600 hover:bg-green-700' 
+                : 'bg-primary hover:bg-primary/90'
+              }`}
+              disabled={ownedStories.has(story.id)}
             >
-              Acheter
+              {ownedStories.has(story.id) ? 'Dans ma bibliothèque' : story.price === 0 ? 'Ajouter' : 'Acheter'}
             </Button>
           </div>
         </div>
