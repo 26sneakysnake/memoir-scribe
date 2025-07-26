@@ -20,15 +20,14 @@ const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) =>
       <div className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="relative">
-              <h1 className="text-3xl font-cursive font-bold text-primary drop-shadow-sm relative">
-                mémoire
-                {/* Vintage feather crossing through the text */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12">
-                  <Feather className="w-8 h-8 text-accent/60 drop-shadow-sm" strokeWidth={1.5} />
-                </div>
-              </h1>
-              <span className="text-xs text-muted-foreground font-serif italic ml-2">preserving stories</span>
+            <div className="flex items-center space-x-3">
+              <Feather className="w-8 h-8 text-primary drop-shadow-sm" strokeWidth={1.5} />
+              <div className="flex flex-col">
+                <h1 className="text-3xl font-cursive font-bold text-primary drop-shadow-sm">
+                  mémoire
+                </h1>
+                <span className="text-xs text-muted-foreground font-serif italic">preserving stories</span>
+              </div>
             </div>
           </div>
 
