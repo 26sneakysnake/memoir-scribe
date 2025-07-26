@@ -32,6 +32,11 @@ export interface StoryResult {
   summary: string;
 }
 
+export interface TranscriptionResult {
+  transcriptions: string[];
+  isComplete: boolean;
+}
+
 export const claudeService = {
   // Configuration de la clé API
   setApiKey: (apiKey: string) => {
@@ -61,45 +66,95 @@ export const claudeService = {
     }
   },
 
-  // Génération d'histoire à partir des transcriptions
+  // Génération d'histoire à partir des transcriptions avec Claude
   generateStory: async (transcriptions: string[], chapterTitle: string, chapterDescription: string): Promise<StoryResult> => {
+    const client = createAnthropicClient();
+    if (!client) {
+      throw new Error('Clé API Claude non configurée');
+    }
+
     try {
       console.log('📝 Generating story with Claude...');
       
-      // Mode simulation pour tester le système
-      console.log('🔧 Mode simulation activé (clé API à vérifier)');
+      const prompt = `Tu es un écrivain professionnel spécialisé dans la création de récits émouvants à partir de témoignages personnels.
+
+Voici des transcriptions d'enregistrements audio sur le thème "${chapterTitle}":
+
+${transcriptions.map((transcription, index) => `Enregistrement ${index + 1}:\n${transcription}`).join('\n\n')}
+
+Contexte du chapitre: ${chapterDescription}
+
+Transforme ces témoignages en une belle histoire narrative qui:
+1. Respecte fidèlement le contenu et les émotions des témoignages
+2. Structure le récit de manière fluide et engageante 
+3. Préserve l'authenticité et l'intimité des souvenirs
+4. Utilise un style littéraire beau et poétique
+5. Capture l'essence émotionnelle des moments partagés
+
+Réponds avec un JSON contenant:
+- "title": Un titre poétique et évocateur pour cette histoire
+- "story": Le récit complet transformé en belle narration
+- "summary": Un résumé en 1-2 phrases de l'essence de cette histoire`;
+
+      const response = await client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const content = response.content[0].type === 'text' ? response.content[0].text : '';
       
-      // Simuler une belle histoire basée sur les transcriptions
-      const simulatedStory = {
-        title: `Les Souvenirs de ${chapterTitle}`,
-        story: `Il était une fois, dans les méandres de ma mémoire, des moments précieux qui résonnent encore aujourd'hui. 
-
-${transcriptions.map((transcription, index) => {
-  return `Cette histoire commence par ce souvenir vivace : "${transcription.substring(0, 100)}..." 
-
-Chaque détail de cette époque reste gravé dans mon cœur. Les émotions d'alors, les visages aimés, les lieux familiers - tout cela forme une tapisserie de souvenirs qui raconte l'histoire de ma vie.`;
-}).join('\n\n')}
-
-Aujourd'hui, en revisitant ces moments à travers mes mots, je réalise combien ces expériences ont façonné qui je suis devenu. Chaque souvenir est un trésor, chaque émotion une leçon, chaque histoire un héritage pour les générations futures.
-
-C'est ainsi que se termine ce chapitre de mes mémoires, mais l'histoire continue, riche de tous ces moments partagés et de l'amour qui les unit.`,
-        summary: `Un récit touchant de souvenirs personnels centré sur ${chapterTitle}, transformant les témoignages oraux en une belle narration structurée qui capture l'essence émotionnelle des moments partagés.`
-      };
-      
-      // Ajouter un délai pour simuler le traitement
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('✅ Simulated story generated successfully');
-      return {
-        transcriptions,
-        story: simulatedStory.story,
-        title: simulatedStory.title,
-        summary: simulatedStory.summary
-      };
+      try {
+        const result = JSON.parse(content);
+        console.log('✅ Story generated with Claude successfully');
+        
+        return {
+          transcriptions,
+          story: result.story,
+          title: result.title,
+          summary: result.summary
+        };
+      } catch (parseError) {
+        console.error('❌ Error parsing Claude response:', parseError);
+        
+        // Fallback: extraire manuellement les parties du texte
+        const titleMatch = content.match(/"title":\s*"([^"]+)"/);
+        const storyMatch = content.match(/"story":\s*"([^"]+)"/s);
+        const summaryMatch = content.match(/"summary":\s*"([^"]+)"/);
+        
+        return {
+          transcriptions,
+          title: titleMatch?.[1] || `Les Souvenirs de ${chapterTitle}`,
+          story: storyMatch?.[1] || content.replace(/[{}]/g, '').trim(),
+          summary: summaryMatch?.[1] || `Un récit touchant de souvenirs personnels centré sur ${chapterTitle}.`
+        };
+      }
       
     } catch (error) {
       console.error('❌ Error generating story:', error);
       throw new Error(`Échec de la génération d'histoire: ${error.message}`);
+    }
+  },
+
+  // Transcription seule des audios
+  transcribeChapterAudios: async (audioUrls: string[]): Promise<TranscriptionResult> => {
+    try {
+      console.log('🎯 Starting audio transcription...');
+      console.log(`📁 Processing ${audioUrls.length} audio files`);
+      
+      // Transcrire tous les audios avec Whisper
+      console.log('🎤 Starting real transcription with Whisper...');
+      const transcriptions = await TranscriptionService.transcribeMultipleAudios(audioUrls);
+      
+      console.log('✅ Transcription completed');
+      return {
+        transcriptions,
+        isComplete: true
+      };
+      
+    } catch (error) {
+      console.error('❌ Error in transcription:', error);
+      throw error;
     }
   },
 
