@@ -99,14 +99,19 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
   };
 
   const updateAudioLevel = () => {
-    if (analyserRef.current && isRecording && !isPaused) {
+    if (analyserRef.current && (isRecording || isPaused)) {
       const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
       analyserRef.current.getByteFrequencyData(dataArray);
       
       const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
-      setAudioLevel(average / 255);
+      const normalizedLevel = average / 255;
+      setAudioLevel(normalizedLevel);
       
-      animationRef.current = requestAnimationFrame(updateAudioLevel);
+      console.log('Audio level:', normalizedLevel); // Debug
+      
+      if (isRecording && !isPaused) {
+        animationRef.current = requestAnimationFrame(updateAudioLevel);
+      }
     }
   };
 
@@ -137,36 +142,37 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
     setAudioLevel(0);
   };
 
-  const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; isRecording: boolean }) => {
-    const bars = Array.from({ length: 24 }, (_, i) => {
-      const height = isRecording 
-        ? Math.max(0.2, audioLevel * Math.random() * 2.5) 
-        : 0.2;
-      
-      return (
-        <div
-          key={i}
-          className="bg-gradient-to-t from-primary to-primary-glow rounded-full transition-all duration-200 organic-wave relative"
-          style={{
-            height: `${height * 100}%`,
-            animationDelay: `${i * 0.08}s`,
-            minHeight: '12px',
-            width: '4px',
-            boxShadow: isRecording ? '0 0 8px rgba(139, 69, 19, 0.4)' : 'none',
-          }}
-        >
-          {/* Ink-like texture */}
-          <div className="absolute inset-0 bg-gradient-to-t from-accent/20 to-transparent rounded-full"></div>
-        </div>
-      );
-    });
-
+const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; isRecording: boolean }) => {
+  const bars = Array.from({ length: 24 }, (_, i) => {
+    // Utiliser le vrai niveau audio au lieu de Math.random()
+    const baseHeight = isRecording ? Math.max(0.2, audioLevel) : 0.2;
+    const randomVariation = isRecording ? (Math.random() * 0.3 - 0.15) : 0; // Petite variation
+    const height = Math.max(0.1, Math.min(1, baseHeight + randomVariation));
+    
     return (
-      <div className="flex items-center justify-center space-x-2 h-24 p-4 rounded-xl bg-gradient-to-r from-background/50 to-card/50 border border-primary/10">
-        {bars}
+      <div
+        key={i}
+        className="bg-gradient-to-t from-primary to-primary-glow rounded-full transition-all duration-200 organic-wave relative"
+        style={{
+          height: `${height * 100}%`,
+          animationDelay: `${i * 0.08}s`,
+          minHeight: '12px',
+          width: '4px',
+          boxShadow: isRecording ? '0 0 8px rgba(139, 69, 19, 0.4)' : 'none',
+        }}
+      >
+        {/* Ink-like texture */}
+        <div className="absolute inset-0 bg-gradient-to-t from-accent/20 to-transparent rounded-full"></div>
       </div>
     );
-  };
+  });
+
+  return (
+    <div className="flex items-center justify-center space-x-2 h-24 p-4 rounded-xl bg-gradient-to-r from-background/50 to-card/50 border border-primary/10">
+      {bars}
+    </div>
+  );
+};
 
   return (
     <div className="container mx-auto px-4 py-12 space-y-8 font-sans">
