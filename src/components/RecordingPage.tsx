@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Pause, Play, Square, Save } from 'lucide-react';
+import { Mic, MicOff, Pause, Play, Square, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -128,6 +128,15 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
     }
   };
 
+  const deleteRecording = () => {
+    // Delete the current recording
+    console.log('Deleting current recording');
+    setRecordingTime(0);
+    setHasRecording(false);
+    setRecordingTitle('');
+    setAudioLevel(0);
+  };
+
   const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; isRecording: boolean }) => {
     const bars = Array.from({ length: 24 }, (_, i) => {
       const height = isRecording 
@@ -240,7 +249,7 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
 
         {/* Save Recording */}
         {hasRecording && (
-          <div className="space-y-6 pt-6 border-t border-border/50">
+          <div className="space-y-4 pt-6 border-t border-border/50">
             <input
               type="text"
               value={recordingTitle}
@@ -248,12 +257,21 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
               placeholder="Name this memory..."
               className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-organic"
             />
-            <button
-              onClick={saveRecording}
-              className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-primary/90 transition-organic font-medium"
-            >
-              Save Recording
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={saveRecording}
+                disabled={!recordingTitle.trim()}
+                className="flex-1 bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-primary/90 transition-organic font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save Recording
+              </button>
+              <button
+                onClick={deleteRecording}
+                className="flex items-center justify-center px-4 py-3 rounded-lg border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-organic"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
