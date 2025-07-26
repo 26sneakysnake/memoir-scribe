@@ -163,16 +163,39 @@ export const recordingsService = {
     audioBlob: Blob, 
     recording: Omit<Recording, 'id' | 'chapterId' | 'audioUrl'>
   ): Promise<string> => {
-    // Upload audio file to Firebase Storage
-    const audioRef = ref(storage, `users/${userId}/chapters/${chapterId}/recordings/${Date.now()}.webm`);
-    const snapshot = await uploadBytes(audioRef, audioBlob);
-    const audioUrl = await getDownloadURL(snapshot.ref);
+    console.log('🎤 Starting audio upload for user:', userId);
+    console.log('📁 Chapter ID:', chapterId);
+    console.log('🗂️ Audio blob size:', audioBlob.size, 'bytes');
     
-    // Add recording metadata to Firestore
-    return await recordingsService.addRecording(userId, chapterId, {
-      ...recording,
-      audioUrl
-    });
+    try {
+      // Upload audio file to Firebase Storage
+      const fileName = `${Date.now()}.webm`;
+      const storagePath = `users/${userId}/chapters/${chapterId}/recordings/${fileName}`;
+      console.log('📤 Uploading to path:', storagePath);
+      
+      const audioRef = ref(storage, storagePath);
+      console.log('🔗 Storage reference created');
+      
+      const snapshot = await uploadBytes(audioRef, audioBlob);
+      console.log('✅ Upload successful, getting download URL...');
+      const audioUrl = await getDownloadURL(snapshot.ref);
+      console.log('🔗 Download URL obtained:', audioUrl.substring(0, 50) + '...');
+      
+      // Add recording metadata to Firestore
+      console.log('💾 Saving recording metadata to Firestore...');
+      const recordingId = await recordingsService.addRecording(userId, chapterId, {
+        ...recording,
+        audioUrl
+      });
+      console.log('✅ Recording saved with ID:', recordingId);
+      
+      return recordingId;
+    } catch (error) {
+      console.error('❌ Error uploading recording:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      throw error;
+    }
   },
 
   // Get all recordings for a chapter
