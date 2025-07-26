@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { chaptersService, recordingsService, Chapter } from '@/services/firestore';
+import { chaptersService, Chapter } from '@/services/firestore';
+import { recordingsService } from '@/services/recordingsService';
 import { useToast } from '@/hooks/use-toast';
 
 interface RecordingPageProps {
@@ -26,6 +27,12 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
   const [hasRecording, setHasRecording] = useState(false);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [saving, setSaving] = useState(false);
+  
+  // Backend upload states
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -195,31 +202,40 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
     }
 
     setSaving(true);
+    setUploadError(null);
     
     try {
       // Create audio blob from recorded chunks
-      // Determine the correct MIME type based on what was actually recorded
-      let mimeType = 'audio/aac'; // Default to AAC
+      let mimeType = 'audio/webm'; // Use webm for better backend compatibility
       if (mediaRecorderRef.current) {
-        mimeType = mediaRecorderRef.current.mimeType || 'audio/aac';
+        mimeType = mediaRecorderRef.current.mimeType || 'audio/webm';
       }
       const audioBlob = new Blob(recordedChunksRef.current, { type: mimeType });
       
-      // Upload recording with audio to Firebase
+      console.log('💾 Saving recording with backend upload...');
+      
+      // Upload to backend with progress tracking
       await recordingsService.uploadRecordingWithAudio(
-        currentUser.uid,
-        selectedChapterId,
         audioBlob,
-        {
-          title: recordingTitle,
-          duration: recordingTime,
-          date: new Date().toISOString()
+        recordingTitle,
+        recordingTime,
+        selectedChapterId,
+        currentUser.uid,
+        // Progress callback
+        (progress) => {
+          setIsUploading(progress.isUploading);
+          setUploadProgress(progress.uploadProgress);
+          setIsProcessing(progress.isProcessing);
+          
+          if (progress.error) {
+            setUploadError(progress.error);
+          }
         }
       );
 
       toast({
-        title: "Recording Saved",
-        description: "Your recording has been uploaded successfully.",
+        title: "Recording Uploaded",
+        description: "Your recording has been uploaded and is being processed!",
       });
 
       // Reset form
@@ -228,13 +244,20 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       setRecordingTitle('');
       setSelectedChapterId('');
       setAudioLevel(0);
+      setIsUploading(false);
+      setUploadProgress(0);
+      setIsProcessing(false);
       recordedChunksRef.current = [];
       
     } catch (error) {
       console.error('Error saving recording:', error);
+      setIsUploading(false);
+      setIsProcessing(false);
+      setUploadError(error instanceof Error ? error.message : 'Upload failed');
+      
       toast({
         title: "Upload Failed",
-        description: "Failed to save recording. Please try again.",
+        description: "Failed to upload recording. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -417,13 +440,18 @@ const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; is
             <div className="flex space-x-3">
               <button
                 onClick={saveRecording}
-                disabled={!recordingTitle.trim() || !selectedChapterId || saving}
+                disabled={!recordingTitle.trim() || !selectedChapterId || saving || isUploading || isProcessing}
                 className="flex-1 bg-primary text-primary-foreground py-3 px-4 md:px-6 text-base rounded-lg hover:bg-primary/90 transition-organic font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {saving ? (
+                {saving || isUploading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                    Saving...
+                    {isUploading ? `Uploading ${uploadProgress}%` : 'Saving...'}
+                  </>
+                ) : isProcessing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Processing...
                   </>
                 ) : (
                   'Save Recording'
@@ -431,10 +459,47 @@ const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; is
               </button>
               <button
                 onClick={deleteRecording}
-                className="flex items-center justify-center px-4 py-3 rounded-lg border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-organic"
+                disabled={saving || isUploading || isProcessing}
+                className="flex items-center justify-center px-4 py-3 rounded-lg border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-organic disabled:opacity-50"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
+              
+              {/* Upload Progress and Status */}
+              {(isUploading || isProcessing || uploadError) && (
+                <div className="mt-4 space-y-2">
+                  {/* Upload Progress */}
+                  {isUploading && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm text-foreground">
+                        <span>Uploading to backend...</span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full bg-secondary rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Processing Status */}
+                  {isProcessing && (
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span>AI is transcribing and analyzing your recording...</span>
+                    </div>
+                  )}
+                  
+                  {/* Error Display */}
+                  {uploadError && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                      <p className="text-sm text-destructive">{uploadError}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
