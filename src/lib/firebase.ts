@@ -4,13 +4,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  // Add your Firebase config here
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id"
+  apiKey: "AIzaSyAdb3-xGIFIjy50RDKUNJ7ky4EQWz6H5tE",
+  authDomain: "infinite-memoire-dev.firebaseapp.com",
+  projectId: "infinite-memoire-dev",
+  storageBucket: "infinite-memoire-dev.firebasestorage.app",
+  messagingSenderId: "32272011394",
+  appId: "1:32272011394:web:ec436ad5fb69fc39b9dfbe",
+  measurementId: "G-K0ZXXDFMF0"
 };
 
 // Initialize Firebase
