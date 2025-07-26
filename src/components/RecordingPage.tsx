@@ -144,21 +144,24 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
 
 const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; isRecording: boolean }) => {
   const bars = Array.from({ length: 24 }, (_, i) => {
-    // Utiliser le vrai niveau audio au lieu de Math.random()
-    const baseHeight = isRecording ? Math.max(0.2, audioLevel) : 0.2;
-    const randomVariation = isRecording ? (Math.random() * 0.3 - 0.15) : 0; // Petite variation
-    const height = Math.max(0.1, Math.min(1, baseHeight + randomVariation));
+    // Hauteur stable basée sur l'index pour éviter les re-créations
+    const baseHeight = 0.3 + (i % 3) * 0.1; // Variation stable par barre
+    const audioMultiplier = isRecording ? (0.5 + audioLevel * 1.5) : 0.3;
+    const height = Math.max(0.2, Math.min(1, baseHeight * audioMultiplier));
     
     return (
       <div
         key={i}
-        className="bg-gradient-to-t from-primary to-primary-glow rounded-full transition-all duration-200 organic-wave relative"
+        className={`bg-gradient-to-t from-primary to-primary-glow rounded-full transition-all duration-150 relative ${
+          isRecording ? 'organic-wave' : ''
+        }`}
         style={{
           height: `${height * 100}%`,
-          animationDelay: `${i * 0.08}s`,
+          animationDelay: `${i * 0.05}s`,
           minHeight: '12px',
           width: '4px',
           boxShadow: isRecording ? '0 0 8px rgba(139, 69, 19, 0.4)' : 'none',
+          transform: isRecording ? `scaleY(${0.8 + audioLevel * 0.4})` : 'scaleY(1)',
         }}
       >
         {/* Ink-like texture */}
