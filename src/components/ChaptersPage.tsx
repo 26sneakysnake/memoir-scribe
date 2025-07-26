@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, MoreVertical, Plus, Edit, Trash2, Loader2, BookOpen, Key } from 'lucide-react';
+import { Play, Pause, MoreVertical, Plus, Edit, Trash2, Loader2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,8 +11,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAuth } from '@/contexts/AuthContext';
 import { chaptersService, recordingsService, Chapter, Recording } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { claudeService, StoryResult } from '@/services/claudeService';
-import ApiKeyDialog from '@/components/ApiKeyDialog';
 
 // Interfaces imported from services/firestore.ts
 
@@ -27,7 +25,6 @@ const ChaptersPage = () => {
   const [playingRecording, setPlayingRecording] = useState<string | null>(null);
   const [deletingRecording, setDeletingRecording] = useState<string | null>(null);
   const [compilingChapter, setCompilingChapter] = useState<string | null>(null);
-  const [generatedStories, setGeneratedStories] = useState<{ [key: string]: StoryResult }>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [newChapter, setNewChapter] = useState({
     title: '',
@@ -200,20 +197,11 @@ const ChaptersPage = () => {
   };
 
   const handleCompileChapter = async (chapterId: string) => {
-    // Vérifier si la clé API est configurée
-    if (!claudeService.hasApiKey()) {
-      toast({
-        title: "Clé API requise",
-        description: "Configurez votre clé API Claude pour générer des histoires.",
-        variant: "destructive",
-      });
-      return;
-    }
     const chapter = chapters.find(c => c.id === chapterId);
     if (!chapter || chapter.recordings.length === 0) {
       toast({
-        title: "Aucun enregistrement",
-        description: "Ce chapitre a besoin d'enregistrements pour être compilé en histoire.",
+        title: "No recordings",
+        description: "This chapter needs recordings to compile into a story.",
         variant: "destructive",
       });
       return;
@@ -222,38 +210,23 @@ const ChaptersPage = () => {
     setCompilingChapter(chapterId);
     
     try {
-      // Extraire les URLs audio des enregistrements
-      const audioUrls = chapter.recordings
-        .filter(recording => recording.audioUrl)
-        .map(recording => recording.audioUrl!);
-
-      if (audioUrls.length === 0) {
-        throw new Error("Aucun fichier audio disponible");
-      }
-
-      // Traitement avec Claude
-      const storyResult = await claudeService.processChapterAudios(
-        audioUrls,
-        chapter.title,
-        chapter.description
-      );
-
-      // Sauvegarder le résultat
-      setGeneratedStories(prev => ({
-        ...prev,
-        [chapterId]: storyResult
-      }));
+      // TODO: Replace with actual backend call
+      // Simulate backend processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
       toast({
-        title: "Histoire générée !",
-        description: `${chapter.title} a été transformé en une belle histoire.`,
+        title: "Story compiled!",
+        description: `${chapter.title} has been compiled into a complete story.`,
       });
+      
+      // TODO: Handle the returned story text from backend
+      console.log('Compiled story for chapter:', chapter.title);
       
     } catch (error) {
       console.error('Error compiling chapter:', error);
       toast({
-        title: "Échec de la compilation",
-        description: error.message || "Impossible de compiler l'histoire. Veuillez réessayer.",
+        title: "Compilation failed",
+        description: "Failed to compile the story. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -458,51 +431,21 @@ const ChaptersPage = () => {
                   
                   {/* Compile Button */}
                   <div className="mt-4 pt-4 border-t border-border/30">
-                    {claudeService.hasApiKey() ? (
-                      <Button
-                        onClick={() => handleCompileChapter(chapter.id)}
-                        disabled={chapter.recordings.length === 0 || compilingChapter === chapter.id}
-                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                        size="lg"
-                      >
-                        <BookOpen className="w-5 h-5 mr-2" />
-                        {compilingChapter === chapter.id ? 'Génération en cours...' : 'Compiler en Histoire'}
-                      </Button>
-                    ) : (
-                      <ApiKeyDialog>
-                        <Button
-                          disabled={chapter.recordings.length === 0}
-                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                          size="lg"
-                        >
-                          <Key className="w-5 h-5 mr-2" />
-                          Configurer API Claude
-                        </Button>
-                      </ApiKeyDialog>
-                    )}
+                    <Button
+                      onClick={() => handleCompileChapter(chapter.id)}
+                      disabled={chapter.recordings.length === 0 || compilingChapter === chapter.id}
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                      size="lg"
+                    >
+                      <BookOpen className="w-5 h-5 mr-2" />
+                      {compilingChapter === chapter.id ? 'Compiling Story...' : 'Compile Chapter'}
+                    </Button>
                     {chapter.recordings.length === 0 && (
                       <p className="text-xs text-muted-foreground mt-2 text-center">
-                        Ajoutez des enregistrements pour compiler ce chapitre
+                        Add recordings to compile this chapter
                       </p>
                     )}
                   </div>
-                  
-                  {/* Generated Story Display */}
-                  {generatedStories[chapter.id] && (
-                    <div className="mt-4 pt-4 border-t border-border/30">
-                      <div className="vintage-card p-4 bg-background/30">
-                        <h4 className="font-serif text-lg font-semibold text-primary mb-2">
-                          {generatedStories[chapter.id].title}
-                        </h4>
-                        <p className="text-sm text-muted-foreground mb-3 italic">
-                          {generatedStories[chapter.id].summary}
-                        </p>
-                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-serif">
-                          {generatedStories[chapter.id].story}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
