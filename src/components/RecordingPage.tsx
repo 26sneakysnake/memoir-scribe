@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Mic, MicOff, Pause, Play, Square, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -143,32 +143,57 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
   };
 
 const WaveVisualization = ({ audioLevel, isRecording }: { audioLevel: number; isRecording: boolean }) => {
-  const bars = Array.from({ length: 24 }, (_, i) => {
-    // Hauteur stable basée sur l'index pour éviter les re-créations
-    const baseHeight = 0.3 + (i % 3) * 0.1; // Variation stable par barre
-    const audioMultiplier = isRecording ? (0.5 + audioLevel * 1.5) : 0.3;
-    const height = Math.max(0.2, Math.min(1, baseHeight * audioMultiplier));
-    
-    return (
-      <div
-        key={i}
-        className={`bg-gradient-to-t from-primary to-primary-glow rounded-full transition-all duration-150 relative ${
-          isRecording ? 'organic-wave' : ''
-        }`}
-        style={{
-          height: `${height * 100}%`,
-          animationDelay: `${i * 0.05}s`,
-          minHeight: '12px',
-          width: '4px',
-          boxShadow: isRecording ? '0 0 8px rgba(139, 69, 19, 0.4)' : 'none',
-          transform: isRecording ? `scaleY(${0.8 + audioLevel * 0.4})` : 'scaleY(1)',
-        }}
-      >
-        {/* Ink-like texture */}
-        <div className="absolute inset-0 bg-gradient-to-t from-accent/20 to-transparent rounded-full"></div>
-      </div>
-    );
-  });
+  // Mémoriser les barres pour éviter la re-création à chaque render
+  const bars = useMemo(() => {
+    return Array.from({ length: 24 }, (_, i) => {
+      const baseHeight = 0.3 + (i % 3) * 0.1;
+      
+      return (
+        <div
+          key={i}
+          className={`bg-gradient-to-t from-primary to-primary-glow rounded-full relative bar-${i}`}
+          style={{
+            height: `${baseHeight * 100}%`,
+            minHeight: '12px',
+            width: '4px',
+            transition: 'transform 150ms ease-out',
+          }}
+        >
+          {/* Ink-like texture */}
+          <div className="absolute inset-0 bg-gradient-to-t from-accent/20 to-transparent rounded-full"></div>
+        </div>
+      );
+    });
+  }, []); // Pas de dépendances - les barres sont créées une seule fois
+
+  // Effet pour animer les barres en fonction de l'audio level
+  useEffect(() => {
+    if (isRecording) {
+      const animateBars = () => {
+        bars.forEach((_, i) => {
+          const bar = document.querySelector(`.bar-${i}`) as HTMLElement;
+          if (bar) {
+            const variation = Math.sin(Date.now() * 0.005 + i * 0.5) * 0.3;
+            const scale = 0.8 + audioLevel * 0.6 + variation * 0.2;
+            bar.style.transform = `scaleY(${Math.max(0.5, scale)})`;
+            bar.style.boxShadow = '0 0 8px rgba(139, 69, 19, 0.4)';
+          }
+        });
+      };
+      
+      const interval = setInterval(animateBars, 50); // 20 FPS pour une animation fluide
+      return () => clearInterval(interval);
+    } else {
+      // Reset des barres quand on arrête
+      bars.forEach((_, i) => {
+        const bar = document.querySelector(`.bar-${i}`) as HTMLElement;
+        if (bar) {
+          bar.style.transform = 'scaleY(1)';
+          bar.style.boxShadow = 'none';
+        }
+      });
+    }
+  }, [isRecording, audioLevel, bars]);
 
   return (
     <div className="flex items-center justify-center space-x-2 h-24 p-4 rounded-xl bg-gradient-to-r from-background/50 to-card/50 border border-primary/10">
