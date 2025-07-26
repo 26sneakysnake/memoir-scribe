@@ -76,25 +76,20 @@ export const claudeService = {
     try {
       console.log('📝 Generating story with Claude...');
       
-      const prompt = `Tu es un écrivain professionnel spécialisé dans la création de récits émouvants à partir de témoignages personnels.
-
-Voici des transcriptions d'enregistrements audio sur le thème "${chapterTitle}":
-
-${transcriptions.map((transcription, index) => `Enregistrement ${index + 1}:\n${transcription}`).join('\n\n')}
-
-Contexte du chapitre: ${chapterDescription}
-
-Transforme ces témoignages en une belle histoire narrative qui:
-1. Respecte fidèlement le contenu et les émotions des témoignages
-2. Structure le récit de manière fluide et engageante 
-3. Préserve l'authenticité et l'intimité des souvenirs
-4. Utilise un style littéraire beau et poétique
-5. Capture l'essence émotionnelle des moments partagés
-
-Réponds avec un JSON contenant:
-- "title": Un titre poétique et évocateur pour cette histoire
-- "story": Le récit complet transformé en belle narration
-- "summary": Un résumé en 1-2 phrases de l'essence de cette histoire`;
+      const prompt = `You are a professional writer specialized in creating moving narratives from personal testimonies.
+Here are transcriptions of audio recordings on the theme "${chapterTitle}":
+${transcriptions.map((transcription, index) => `Recording ${index + 1}:\n${transcription}`).join('\n\n')}
+Chapter context: ${chapterDescription}
+Transform these testimonies into a beautiful narrative story that:
+1. Faithfully respects the content and emotions of the testimonies
+2. Structures the narrative in a fluid and engaging way
+3. Preserves the authenticity and intimacy of memories
+4. Uses a beautiful and poetic literary style
+5. Captures the emotional essence of shared moments
+Respond with a JSON containing:
+- "title": A poetic and evocative title for this story
+- "story": The complete narrative transformed into beautiful narration
+- "summary": A 1-2 sentence summary of the essence of this story`;
 
       const response = await client.messages.create({
         model: 'claude-3-5-sonnet-20241022',
