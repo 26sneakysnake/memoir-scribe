@@ -60,8 +60,23 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       // Clear previous recording chunks
       recordedChunksRef.current = [];
       
-      // Setup MediaRecorder
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      // Setup MediaRecorder with AAC format
+      const options = { mimeType: 'audio/mp4; codecs=mp4a.40.2' }; // AAC codec
+      
+      // Fallback to webm if AAC not supported
+      let mediaRecorder;
+      if (MediaRecorder.isTypeSupported(options.mimeType)) {
+        mediaRecorder = new MediaRecorder(stream, options);
+        console.log('📹 Recording in AAC format');
+      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        console.log('📹 Recording in WebM format (AAC not supported)');
+      } else {
+        mediaRecorder = new MediaRecorder(stream);
+        console.log('📹 Recording in default format');
+      }
+      
+      mediaRecorderRef.current = mediaRecorder;
       
       // Setup data handling
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -172,7 +187,12 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
     
     try {
       // Create audio blob from recorded chunks
-      const audioBlob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
+      // Determine the correct MIME type based on what was actually recorded
+      let mimeType = 'audio/mp4'; // Default to AAC
+      if (mediaRecorderRef.current) {
+        mimeType = mediaRecorderRef.current.mimeType || 'audio/mp4';
+      }
+      const audioBlob = new Blob(recordedChunksRef.current, { type: mimeType });
       
       // Upload recording with audio to Firebase
       await recordingsService.uploadRecordingWithAudio(

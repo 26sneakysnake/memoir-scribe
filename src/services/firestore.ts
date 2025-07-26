@@ -169,7 +169,7 @@ export const recordingsService = {
     
     try {
       // Upload audio file to Firebase Storage
-      const fileName = `${Date.now()}.webm`;
+      const fileName = `${Date.now()}.m4a`; // Changed from .webm to .m4a for AAC
       const storagePath = `users/${userId}/chapters/${chapterId}/recordings/${fileName}`;
       console.log('📤 Uploading to path:', storagePath);
       
