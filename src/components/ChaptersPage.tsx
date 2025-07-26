@@ -205,8 +205,8 @@ const ChaptersPage = () => {
     const chapter = chapters.find(c => c.id === chapterId);
     if (!chapter || chapter.recordings.length === 0) {
       toast({
-        title: "Aucun enregistrement",
-        description: "Cette histoire a besoin d'enregistrements pour être transcrite.",
+        title: "No recordings",
+        description: "This story needs recordings to be transcribed.",
         variant: "destructive",
       });
       return;
@@ -215,34 +215,34 @@ const ChaptersPage = () => {
     setTranscribingChapter(chapterId);
     
     try {
-      // Extraire les URLs audio des enregistrements
+      // Extract audio URLs from recordings
       const audioUrls = chapter.recordings
         .filter(recording => recording.audioUrl)
         .map(recording => recording.audioUrl!);
 
       if (audioUrls.length === 0) {
-        throw new Error("Aucun fichier audio disponible");
+        throw new Error("No audio files available");
       }
 
-      // Transcription avec Whisper
+      // Transcription with Whisper
       const transcriptionResult = await claudeService.transcribeChapterAudios(audioUrls);
 
-      // Sauvegarder le résultat
+      // Save the result
       setChapterTranscriptions(prev => ({
         ...prev,
         [chapterId]: transcriptionResult
       }));
       
       toast({
-        title: "Transcription terminée !",
-        description: `${chapter.title} a été transcrit avec succès.`,
+        title: "Transcription completed!",
+        description: `${chapter.title} has been successfully transcribed.`,
       });
       
     } catch (error) {
       console.error('Error transcribing chapter:', error);
       toast({
-        title: "Échec de la transcription",
-        description: error.message || "Impossible de transcrire l'audio. Veuillez réessayer.",
+        title: "Transcription failed",
+        description: error.message || "Unable to transcribe audio. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -251,11 +251,11 @@ const ChaptersPage = () => {
   };
 
   const handleCompileStory = async (chapterId: string) => {
-    // Vérifier si la clé API est configurée
+    // Check if API key is configured
     if (!claudeService.hasApiKey()) {
       toast({
-        title: "Clé API requise",
-        description: "Configurez votre clé API Claude pour générer des histoires.",
+        title: "API key required",
+        description: "Configure your Claude API key to generate stories.",
         variant: "destructive",
       });
       return;
@@ -266,8 +266,8 @@ const ChaptersPage = () => {
     
     if (!chapter || !transcriptions || transcriptions.transcriptions.length === 0) {
       toast({
-        title: "Transcription requise",
-        description: "Veuillez d'abord transcrire les enregistrements.",
+        title: "Transcription required",
+        description: "Please transcribe the recordings first.",
         variant: "destructive",
       });
       return;
@@ -276,29 +276,29 @@ const ChaptersPage = () => {
     setCompilingChapter(chapterId);
     
     try {
-      // Générer l'histoire avec Claude
+      // Generate story with Claude
       const storyResult = await claudeService.generateStory(
         transcriptions.transcriptions,
         chapter.title,
         chapter.description
       );
 
-      // Sauvegarder le résultat
+      // Save the result
       setGeneratedStories(prev => ({
         ...prev,
         [chapterId]: storyResult
       }));
       
       toast({
-        title: "Histoire générée !",
-        description: `${chapter.title} a été transformé en une belle histoire.`,
+        title: "Story generated!",
+        description: `${chapter.title} has been transformed into a beautiful story.`,
       });
       
     } catch (error) {
       console.error('Error compiling story:', error);
       toast({
-        title: "Échec de la compilation",
-        description: error.message || "Impossible de compiler l'histoire. Veuillez réessayer.",
+        title: "Compilation failed",
+        description: error.message || "Unable to compile story. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -513,7 +513,7 @@ const ChaptersPage = () => {
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                       </svg>
-                      {transcribingChapter === chapter.id ? 'Transcription en cours...' : 'Transcript audio recordings into text'}
+                      {transcribingChapter === chapter.id ? 'Transcribing...' : 'Transcribe audio recordings'}
                     </Button>
                     
                     {/* Step 2: Compile into Story (only show after transcription) */}
@@ -526,7 +526,7 @@ const ChaptersPage = () => {
                           size="lg"
                         >
                           <BookOpen className="w-5 h-5 mr-2" />
-                          {compilingChapter === chapter.id ? 'Génération en cours...' : 'Compile into a story'}
+                          {compilingChapter === chapter.id ? 'Generating story...' : 'Compile into a story'}
                         </Button>
                       ) : (
                         <ApiKeyDialog>
@@ -535,7 +535,7 @@ const ChaptersPage = () => {
                             size="lg"
                           >
                             <Key className="w-5 h-5 mr-2" />
-                            Configurer API Claude
+                            Configure Claude API
                           </Button>
                         </ApiKeyDialog>
                       )
@@ -543,7 +543,7 @@ const ChaptersPage = () => {
                     
                     {chapter.recordings.length === 0 && (
                       <p className="text-xs text-muted-foreground mt-2 text-center">
-                        Ajoutez des enregistrements pour commencer
+                        Add recordings to get started
                       </p>
                     )}
                   </div>
@@ -559,7 +559,7 @@ const ChaptersPage = () => {
                           {chapterTranscriptions[chapter.id].transcriptions.map((transcription, index) => (
                             <div key={index} className="p-3 bg-muted/30 rounded-lg">
                               <div className="text-xs text-muted-foreground mb-1">
-                                Enregistrement {index + 1}
+                                Recording {index + 1}
                               </div>
                               <div className="text-sm text-foreground leading-relaxed">
                                 {transcription}
