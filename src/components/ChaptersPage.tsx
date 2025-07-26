@@ -526,7 +526,7 @@ const ChaptersPage = () => {
                           size="lg"
                         >
                           <BookOpen className="w-5 h-5 mr-2" />
-                          {compilingChapter === chapter.id ? 'Génération en cours...' : 'Compiler en Histoire'}
+                          {compilingChapter === chapter.id ? 'Génération en cours...' : 'Compile into a story'}
                         </Button>
                       ) : (
                         <ApiKeyDialog>
