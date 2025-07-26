@@ -61,19 +61,30 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
       recordedChunksRef.current = [];
       
       // Setup MediaRecorder with AAC format
-      const options = { mimeType: 'audio/mp4; codecs=mp4a.40.2' }; // AAC codec
-      
-      // Fallback to webm if AAC not supported
       let mediaRecorder;
-      if (MediaRecorder.isTypeSupported(options.mimeType)) {
-        mediaRecorder = new MediaRecorder(stream, options);
-        console.log('📹 Recording in AAC format');
-      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-        console.log('📹 Recording in WebM format (AAC not supported)');
+      
+      // Try different AAC formats in order of preference
+      const aacFormats = [
+        'audio/aac',                    // Pure AAC format
+        'audio/mp4; codecs=mp4a.40.2',  // AAC in MP4 container
+        'audio/webm; codecs=opus',      // Opus in WebM (fallback)
+        'audio/webm'                    // Basic WebM (final fallback)
+      ];
+      
+      let selectedFormat = null;
+      for (const format of aacFormats) {
+        if (MediaRecorder.isTypeSupported(format)) {
+          selectedFormat = format;
+          break;
+        }
+      }
+      
+      if (selectedFormat) {
+        mediaRecorder = new MediaRecorder(stream, { mimeType: selectedFormat });
+        console.log('📹 Recording in format:', selectedFormat);
       } else {
         mediaRecorder = new MediaRecorder(stream);
-        console.log('📹 Recording in default format');
+        console.log('📹 Recording in default format (no AAC support)');
       }
       
       mediaRecorderRef.current = mediaRecorder;
@@ -188,9 +199,9 @@ const RecordingPage = ({ onRecordingStateChange }: RecordingPageProps) => {
     try {
       // Create audio blob from recorded chunks
       // Determine the correct MIME type based on what was actually recorded
-      let mimeType = 'audio/mp4'; // Default to AAC
+      let mimeType = 'audio/aac'; // Default to AAC
       if (mediaRecorderRef.current) {
-        mimeType = mediaRecorderRef.current.mimeType || 'audio/mp4';
+        mimeType = mediaRecorderRef.current.mimeType || 'audio/aac';
       }
       const audioBlob = new Blob(recordedChunksRef.current, { type: mimeType });
       
