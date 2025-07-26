@@ -1,9 +1,11 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
 
 export interface UserSettings {
   name: string;
   phoneNumber: string;
+  countryCode: string;
   avatar?: string;
   audioSettings: {
     autoSave: boolean;
@@ -45,6 +47,7 @@ export const userService = {
       const defaultSettings: UserSettings = {
         name: initialData?.name || email.split('@')[0], // Use email prefix as default name
         phoneNumber: initialData?.phoneNumber || '',
+        countryCode: initialData?.countryCode || '+33', // Default to France
         avatar: initialData?.avatar || '',
         audioSettings: {
           autoSave: true,
@@ -79,6 +82,26 @@ export const userService = {
       console.log('✅ User settings updated successfully');
     } catch (error) {
       console.error('❌ Error updating user settings:', error);
+      throw error;
+    }
+  },
+
+  // Upload avatar image
+  uploadAvatar: async (userId: string, file: File): Promise<string> => {
+    try {
+      console.log('📤 Uploading avatar for user:', userId);
+      const fileExtension = file.name.split('.').pop();
+      const fileName = `avatar_${Date.now()}.${fileExtension}`;
+      const storagePath = `users/${userId}/avatar/${fileName}`;
+      
+      const avatarRef = ref(storage, storagePath);
+      const snapshot = await uploadBytes(avatarRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      console.log('✅ Avatar uploaded successfully');
+      return downloadURL;
+    } catch (error) {
+      console.error('❌ Error uploading avatar:', error);
       throw error;
     }
   },
