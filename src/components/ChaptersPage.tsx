@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, MoreVertical, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
+import { Play, Pause, MoreVertical, Plus, Edit, Trash2, Loader2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,7 @@ const ChaptersPage = () => {
   const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
   const [playingRecording, setPlayingRecording] = useState<string | null>(null);
   const [deletingRecording, setDeletingRecording] = useState<string | null>(null);
+  const [compilingChapter, setCompilingChapter] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [newChapter, setNewChapter] = useState({
     title: '',
@@ -195,6 +196,44 @@ const ChaptersPage = () => {
     }
   };
 
+  const handleCompileChapter = async (chapterId: string) => {
+    const chapter = chapters.find(c => c.id === chapterId);
+    if (!chapter || chapter.recordings.length === 0) {
+      toast({
+        title: "No recordings",
+        description: "This chapter needs recordings to compile into a story.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCompilingChapter(chapterId);
+    
+    try {
+      // TODO: Replace with actual backend call
+      // Simulate backend processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      toast({
+        title: "Story compiled!",
+        description: `${chapter.title} has been compiled into a complete story.`,
+      });
+      
+      // TODO: Handle the returned story text from backend
+      console.log('Compiled story for chapter:', chapter.title);
+      
+    } catch (error) {
+      console.error('Error compiling chapter:', error);
+      toast({
+        title: "Compilation failed",
+        description: "Failed to compile the story. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCompilingChapter(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-8 font-sans">
@@ -313,6 +352,13 @@ const ChaptersPage = () => {
                       <DropdownMenuItem onClick={() => handleEditChapter(chapter)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleCompileChapter(chapter.id)}
+                        disabled={chapter.recordings.length === 0 || compilingChapter === chapter.id}
+                      >
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        {compilingChapter === chapter.id ? 'Compiling...' : 'Compile'}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => handleDeleteChapter(chapter.id)}
