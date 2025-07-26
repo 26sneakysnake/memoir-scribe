@@ -1,18 +1,28 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-// Clé API Claude - assure-toi qu'elle est valide
-const CLAUDE_API_KEY = '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';
+// Gestion sécurisée de la clé API via localStorage
+const getClaudeApiKey = (): string | null => {
+  return localStorage.getItem('claude_api_key');
+};
 
-let anthropic: Anthropic;
+const setClaudeApiKey = (apiKey: string): void => {
+  localStorage.setItem('claude_api_key', apiKey);
+};
 
-try {
-  anthropic = new Anthropic({
-    apiKey: CLAUDE_API_KEY,
-    dangerouslyAllowBrowser: true
-  });
-} catch (error) {
-  console.error('❌ Erreur initialisation Claude:', error);
-}
+const createAnthropicClient = (): Anthropic | null => {
+  const apiKey = getClaudeApiKey();
+  if (!apiKey) return null;
+  
+  try {
+    return new Anthropic({
+      apiKey,
+      dangerouslyAllowBrowser: true
+    });
+  } catch (error) {
+    console.error('❌ Erreur initialisation Claude:', error);
+    return null;
+  }
+};
 
 export interface StoryResult {
   transcriptions: string[];
@@ -22,6 +32,14 @@ export interface StoryResult {
 }
 
 export const claudeService = {
+  // Configuration de la clé API
+  setApiKey: (apiKey: string) => {
+    setClaudeApiKey(apiKey);
+  },
+
+  hasApiKey: (): boolean => {
+    return !!getClaudeApiKey();
+  },
   // Simulation de transcription (Claude n'a pas encore de support audio direct)
   transcribeAudio: async (audioBlob: Blob): Promise<string> => {
     try {

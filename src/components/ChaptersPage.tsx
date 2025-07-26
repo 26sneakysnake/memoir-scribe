@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, MoreVertical, Plus, Edit, Trash2, Loader2, BookOpen } from 'lucide-react';
+import { Play, Pause, MoreVertical, Plus, Edit, Trash2, Loader2, BookOpen, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { chaptersService, recordingsService, Chapter, Recording } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { claudeService, StoryResult } from '@/services/claudeService';
+import ApiKeyDialog from '@/components/ApiKeyDialog';
 
 // Interfaces imported from services/firestore.ts
 
@@ -199,6 +200,15 @@ const ChaptersPage = () => {
   };
 
   const handleCompileChapter = async (chapterId: string) => {
+    // Vérifier si la clé API est configurée
+    if (!claudeService.hasApiKey()) {
+      toast({
+        title: "Clé API requise",
+        description: "Configurez votre clé API Claude pour générer des histoires.",
+        variant: "destructive",
+      });
+      return;
+    }
     const chapter = chapters.find(c => c.id === chapterId);
     if (!chapter || chapter.recordings.length === 0) {
       toast({
@@ -448,15 +458,28 @@ const ChaptersPage = () => {
                   
                   {/* Compile Button */}
                   <div className="mt-4 pt-4 border-t border-border/30">
-                    <Button
-                      onClick={() => handleCompileChapter(chapter.id)}
-                      disabled={chapter.recordings.length === 0 || compilingChapter === chapter.id}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                      size="lg"
-                    >
-                      <BookOpen className="w-5 h-5 mr-2" />
-                      {compilingChapter === chapter.id ? 'Génération en cours...' : 'Compiler en Histoire'}
-                    </Button>
+                    {claudeService.hasApiKey() ? (
+                      <Button
+                        onClick={() => handleCompileChapter(chapter.id)}
+                        disabled={chapter.recordings.length === 0 || compilingChapter === chapter.id}
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                        size="lg"
+                      >
+                        <BookOpen className="w-5 h-5 mr-2" />
+                        {compilingChapter === chapter.id ? 'Génération en cours...' : 'Compiler en Histoire'}
+                      </Button>
+                    ) : (
+                      <ApiKeyDialog>
+                        <Button
+                          disabled={chapter.recordings.length === 0}
+                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                          size="lg"
+                        >
+                          <Key className="w-5 h-5 mr-2" />
+                          Configurer API Claude
+                        </Button>
+                      </ApiKeyDialog>
+                    )}
                     {chapter.recordings.length === 0 && (
                       <p className="text-xs text-muted-foreground mt-2 text-center">
                         Ajoutez des enregistrements pour compiler ce chapitre
