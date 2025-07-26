@@ -11,7 +11,7 @@ interface NavigationProps {
 const Navigation = ({ activeTab, onTabChange, isRecording }: NavigationProps) => {
   const tabs = [
     { id: 'record', label: 'Recording', icon: Mic },
-    { id: 'chapters', label: 'Chapters', icon: BookOpen },
+    { id: 'stories', label: 'Stories', icon: BookOpen },
     { id: 'publish', label: 'Publish', icon: User },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
